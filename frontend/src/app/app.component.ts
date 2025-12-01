@@ -84,6 +84,49 @@ import { environment } from '../environments/environment';
           Aucun document trouvé dans cet index
         </p>
       </div>
+
+      <div class="postgres-section">
+        <h2>🐘 PostgreSQL Users</h2>
+        
+        <div class="user-form">
+          <input 
+            type="text" 
+            [(ngModel)]="newUserName" 
+            placeholder="Nom complet..."
+            class="user-input"
+          />
+          <input 
+            type="email" 
+            [(ngModel)]="newUserEmail" 
+            placeholder="Email..."
+            class="user-input"
+            (keyup.enter)="createUser()"
+          />
+          <button (click)="createUser()" [disabled]="!newUserName.trim() || !newUserEmail.trim()">
+            ➕ Ajouter
+          </button>
+        </div>
+
+        <div class="users-list">
+          <h3>Utilisateurs ({{ users.length }}):</h3>
+          <div class="user-items" *ngIf="users.length > 0">
+            <div class="user-item" *ngFor="let user of users">
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+                <span class="user-date">{{ user.createdAt | date:'short' }}</span>
+              </div>
+              <button (click)="deleteUser(user.id)" class="delete-btn">🗑️</button>
+            </div>
+          </div>
+          <p *ngIf="users.length === 0" class="no-messages">
+            Aucun utilisateur dans la base de données
+          </p>
+          <button (click)="fetchUsers()" class="refresh-btn">
+            🔄 Rafraîchir
+          </button>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -315,6 +358,100 @@ import { environment } from '../environments/environment';
       white-space: pre-wrap;
       word-wrap: break-word;
     }
+
+    .postgres-section {
+      background: #e6f7ff;
+      padding: 2rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+    }
+
+    .user-form {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .user-input {
+      padding: 12px 20px;
+      border: 2px solid #1890ff;
+      border-radius: 25px;
+      font-size: 1rem;
+      outline: none;
+      min-width: 200px;
+      transition: all 0.3s;
+    }
+
+    .user-input:focus {
+      border-color: #096dd9;
+      box-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+    }
+
+    .users-list {
+      margin-top: 2rem;
+    }
+
+    .user-items {
+      max-height: 400px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      margin: 8px 0;
+      background: #f7f7f7;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .user-item:hover {
+      background: #e6f7ff;
+      transform: translateX(5px);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: bold;
+      color: #1890ff;
+      font-size: 1.1rem;
+    }
+
+    .user-email {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .user-date {
+      color: #999;
+      font-size: 0.85rem;
+    }
+
+    .delete-btn {
+      background: #ff4d4f;
+      padding: 8px 16px;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .delete-btn:hover {
+      background: #cf1322;
+    }
   `]
 })
 export class AppComponent implements OnInit {
@@ -330,6 +467,12 @@ export class AppComponent implements OnInit {
   elasticsearchDocs: any[] = [];
   elasticsearchTotal = 0;
 
+  // PostgreSQL Users
+  users: any[] = [];
+  newUserName = '';
+  newUserEmail = '';
+  editingUser: any = null;
+
   constructor(private readonly http: HttpClient) {}
 
   ngOnInit() {
@@ -337,6 +480,8 @@ export class AppComponent implements OnInit {
     this.fetchReceivedMessages();
     this.fetchElasticsearchIndices();
     this.searchElasticsearch();
+    this.fetchUsers();
+    this.initializeUsers();
     
     // Auto-refresh des messages toutes les 5 secondes
     setInterval(() => {
@@ -439,5 +584,76 @@ export class AppComponent implements OnInit {
 
   onIndexChange() {
     this.searchElasticsearch();
+  }
+
+  // PostgreSQL Users methods
+  fetchUsers() {
+    const backendUrl = environment.backendUrl;
+    
+    this.http.get<any[]>(`${backendUrl}/api/users`)
+      .subscribe({
+        next: (users) => {
+          this.users = users;
+        },
+        error: (err) => {
+          console.error('Error fetching users:', err);
+        }
+      });
+  }
+
+  initializeUsers() {
+    const backendUrl = environment.backendUrl;
+    
+    this.http.post(`${backendUrl}/api/users/init`, {})
+      .subscribe({
+        next: (response) => {
+          console.log('Users initialized:', response);
+          this.fetchUsers();
+        },
+        error: (err) => {
+          console.error('Error initializing users:', err);
+        }
+      });
+  }
+
+  createUser() {
+    if (!this.newUserName.trim() || !this.newUserEmail.trim()) {
+      alert('Veuillez remplir tous les champs');
+      return;
+    }
+
+    const backendUrl = environment.backendUrl;
+    
+    this.http.post(`${backendUrl}/api/users`, {
+      name: this.newUserName,
+      email: this.newUserEmail
+    }).subscribe({
+      next: () => {
+        this.newUserName = '';
+        this.newUserEmail = '';
+        this.fetchUsers();
+      },
+      error: (err) => {
+        alert('Erreur: ' + (err.error?.error || 'Impossible de créer l\'utilisateur'));
+      }
+    });
+  }
+
+  deleteUser(id: number) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      return;
+    }
+
+    const backendUrl = environment.backendUrl;
+    
+    this.http.delete(`${backendUrl}/api/users/${id}`)
+      .subscribe({
+        next: () => {
+          this.fetchUsers();
+        },
+        error: (err) => {
+          alert('Erreur lors de la suppression');
+        }
+      });
   }
 }

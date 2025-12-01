@@ -78,3 +78,15 @@ logstash:
     requests:
       cpu: 100m
       memory: 256Mi
+
+postgres:
+  database: hellodb
+  username: hellouser
+  password: hellopass123
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi

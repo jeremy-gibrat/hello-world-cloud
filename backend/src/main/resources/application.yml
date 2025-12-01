@@ -9,3 +9,16 @@ spring:
     port: 5672
     username: guest
     password: guest
+  datasource:
+    url: jdbc:postgresql://postgres-service:5432/hellodb
+    username: hellouser
+    password: hellopass123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true

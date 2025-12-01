@@ -17,6 +17,7 @@ echo "   - Frontend:        http://localhost:8080"
 echo "   - Backend API:     http://localhost:8081"
 echo "   - RabbitMQ Admin:  http://localhost:15672 (guest/guest)"
 echo "   - Kibana:          http://localhost:5601"
+echo "   - PostgreSQL:      localhost:5432 (hellouser/hellopass123)"
 echo ""
 echo "⚠️  Appuyez sur Ctrl+C pour arrêter tous les tunnels"
 echo ""
@@ -32,6 +33,7 @@ kubectl wait --for=condition=ready pod -l app=hello-world-frontend --timeout=120
 kubectl wait --for=condition=ready pod -l app=hello-world-backend --timeout=120s 2>/dev/null || echo "⚠️  Backend pas encore prêt"
 kubectl wait --for=condition=ready pod -l app=rabbitmq --timeout=120s 2>/dev/null || echo "⚠️  RabbitMQ pas encore prêt"
 kubectl wait --for=condition=ready pod -l app=kibana --timeout=120s 2>/dev/null || echo "⚠️  Kibana pas encore prêt (peut prendre 2-3 minutes)"
+kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s 2>/dev/null || echo "⚠️  PostgreSQL pas encore prêt"
 
 echo ""
 echo "⏳ Attente supplémentaire pour Kibana (30 secondes)..."
@@ -68,6 +70,10 @@ kubectl port-forward service/kibana-service 5601:5601 &
 PID_KIBANA=$!
 echo "✅ Kibana tunnel créé (PID: $PID_KIBANA)"
 
+kubectl port-forward service/postgres-service 5432:5432 &
+PID_POSTGRES=$!
+echo "✅ PostgreSQL tunnel créé (PID: $PID_POSTGRES)"
+
 echo ""
 echo "✨ Tous les tunnels sont actifs !"
 echo ""
@@ -75,6 +81,12 @@ echo "🌐 Ouvrez votre navigateur:"
 echo "   - Application: http://localhost:8080"
 echo "   - RabbitMQ:    http://localhost:15672"
 echo "   - Kibana:      http://localhost:5601"
+echo ""
+echo "💾 Connexion PostgreSQL:"
+echo "   - Host: localhost:5432"
+echo "   - Database: hellodb"
+echo "   - User: hellouser"
+echo "   - Password: hellopass123"
 echo ""
 echo "💡 Appuyez sur Ctrl+C pour arrêter"
 echo ""

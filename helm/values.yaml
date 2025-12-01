@@ -46,3 +46,15 @@ kibana:
     type: NodePort
     port: 5601
     nodePort: 30601
+
+postgres:
+  database: hellodb
+  username: hellouser
+  password: hellopass123
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
