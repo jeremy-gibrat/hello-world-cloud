@@ -40,6 +40,15 @@ echo "⏳ Attente du démarrage des pods..."
 kubectl wait --for=condition=ready pod -l app=hello-world-backend --timeout=120s
 kubectl wait --for=condition=ready pod -l app=hello-world-frontend --timeout=120s
 
+# Forcer le redémarrage pour s'assurer d'utiliser les dernières images
+echo ""
+echo "🔄 Redémarrage des déploiements pour garantir les dernières images..."
+kubectl rollout restart deployment/hello-world-backend deployment/hello-world-frontend deployment/rabbitmq
+echo "⏳ Attente de la mise à jour..."
+kubectl rollout status deployment/hello-world-backend --timeout=120s
+kubectl rollout status deployment/hello-world-frontend --timeout=120s
+kubectl rollout status deployment/rabbitmq --timeout=120s
+
 echo ""
 echo "✅ Application déployée avec succès!"
 echo ""
@@ -57,3 +66,7 @@ echo ""
 echo "Ou utilisez:"
 echo "   kubectl port-forward service/hello-world-frontend-service 8081:80"
 echo "   Puis ouvrez: http://localhost:8081"
+echo ""
+echo "🐰 Pour accéder à RabbitMQ Management UI:"
+echo "   minikube service rabbitmq-service --url"
+echo "   Interface de gestion sur le port 15672 (guest/guest)"

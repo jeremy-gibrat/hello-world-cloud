@@ -34,3 +34,9 @@ frontend:
     requests:
       cpu: 100m
       memory: 128Mi
+
+rabbitmq:
+  service:
+    type: NodePort
+    amqpNodePort: 30672
+    managementNodePort: 30673

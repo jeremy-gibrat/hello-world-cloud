@@ -4,3 +4,8 @@ server:
 spring:
   application:
     name: hello-backend
+  rabbitmq:
+    host: rabbitmq-service
+    port: 5672
+    username: guest
+    password: guest

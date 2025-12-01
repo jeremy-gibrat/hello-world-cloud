@@ -39,11 +39,8 @@ frontend:
     - name: ghcr-secret
   
   service:
-    # LoadBalancer pour exposer l'app sur Azure (coût minime)
     type: LoadBalancer
     port: 80
-    # Optionnel: IP publique statique
-    # loadBalancerIP: "x.x.x.x"
   
   resources:
     limits:
@@ -52,3 +49,11 @@ frontend:
     requests:
       cpu: 100m
       memory: 128Mi
+
+rabbitmq:
+  service:
+    type: NodePort
+    amqpPort: 5672
+    managementPort: 15672
+    amqpNodePort: 30672
+    managementNodePort: 31567

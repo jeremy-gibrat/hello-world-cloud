@@ -138,6 +138,15 @@ echo "⏳ Attente du démarrage des pods..."
 kubectl wait --for=condition=ready pod -l app=hello-world-backend --timeout=300s
 kubectl wait --for=condition=ready pod -l app=hello-world-frontend --timeout=300s
 
+# Forcer le redémarrage pour s'assurer d'utiliser les dernières images
+echo ""
+echo "🔄 Redémarrage des déploiements pour garantir les dernières images..."
+kubectl rollout restart deployment/hello-world-backend deployment/hello-world-frontend deployment/rabbitmq
+echo "⏳ Attente de la mise à jour..."
+kubectl rollout status deployment/hello-world-backend --timeout=300s
+kubectl rollout status deployment/hello-world-frontend --timeout=300s
+kubectl rollout status deployment/rabbitmq --timeout=300s
+
 echo ""
 echo "✅ Application déployée avec succès sur Azure AKS!"
 echo ""
