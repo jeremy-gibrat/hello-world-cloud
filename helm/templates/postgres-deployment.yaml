@@ -22,11 +22,20 @@ spec:
           name: postgres
         env:
         - name: POSTGRES_DB
-          value: {{ .Values.postgres.database }}
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: postgres-db
         - name: POSTGRES_USER
-          value: {{ .Values.postgres.username }}
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: postgres-user
         - name: POSTGRES_PASSWORD
-          value: {{ .Values.postgres.password }}
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: postgres-password
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         resources:
@@ -39,7 +48,7 @@ spec:
             command:
             - pg_isready
             - -U
-            - {{ .Values.postgres.username }}
+            - $(POSTGRES_USER)
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -48,7 +57,7 @@ spec:
             command:
             - pg_isready
             - -U
-            - {{ .Values.postgres.username }}
+            - $(POSTGRES_USER)
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3

@@ -24,6 +24,19 @@ fi
 echo "📍 Déploiement sur: Minikube"
 echo ""
 
+# Créer/mettre à jour les secrets depuis .env
+if [ -f .env ]; then
+    echo "🔐 Création des secrets Kubernetes depuis .env..."
+    chmod +x create-secrets.sh
+    ./create-secrets.sh
+    echo ""
+else
+    echo "⚠️  Fichier .env non trouvé"
+    echo "   Copiez .env.example vers .env et configurez vos secrets"
+    echo "   cp .env.example .env"
+    exit 1
+fi
+
 echo "🚀 Déploiement de l'application avec Helm..."
 
 # Vérifier si le release existe déjà

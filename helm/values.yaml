@@ -1,8 +1,7 @@
 # Default values for hello-world chart
+# Les secrets sont maintenant gérés via Kubernetes Secrets
+# et configurés depuis le fichier .env
 postgres:
-  database: hellodb
-  username: hellouser
-  password: hellopass123
   resources:
     limits:
       cpu: 500m
@@ -12,6 +11,7 @@ postgres:
       memory: 256Mi
 
 rabbitmq:
+  # Credentials gérés via Kubernetes Secrets
   service:
     type: NodePort
     amqpNodePort: 30672

@@ -118,6 +118,12 @@ fi
 
 echo "📍 Contexte kubectl: $(kubectl config current-context)"
 
+# Créer/mettre à jour les secrets depuis .env
+echo ""
+echo "🔐 Création des secrets Kubernetes depuis .env..."
+chmod +x create-secrets.sh
+./create-secrets.sh
+
 # Vérifier que le cluster est accessible
 echo ""
 echo "🔍 Vérification du cluster..."

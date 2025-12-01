@@ -25,6 +25,7 @@ Application complète déployée sur Minikube ou Azure AKS avec backend Java Spr
 ## 📚 Documentation
 
 - [⚡ QUICKREF.md](QUICKREF.md) - **Référence rapide des commandes**
+- [🔐 SECRETS.md](SECRETS.md) - **Gestion sécurisée des secrets et mots de passe**
 - [🚀 AZURE.md](AZURE.md) - Guide complet Azure AKS avec Terraform
 - [🐘 POSTGRESQL.md](POSTGRESQL.md) - Documentation PostgreSQL et API users
 - [🛠️ TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Résolution des problèmes courants
