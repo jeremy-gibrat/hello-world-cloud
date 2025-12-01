@@ -200,14 +200,14 @@ SELECT * FROM users;
 ### Fichiers créés
 - `helm/templates/postgres-deployment.yaml`
 - `helm/templates/postgres-service.yaml`
-- `backend/src/main/java/com/hello/model/User.java`
-- `backend/src/main/java/com/hello/repository/UserRepository.java`
-- `backend/src/main/java/com/hello/controller/UserController.java`
+- `apps/backend/src/main/java/com/hello/model/User.java`
+- `apps/backend/src/main/java/com/hello/repository/UserRepository.java`
+- `apps/backend/src/main/java/com/hello/controller/UserController.java`
 
 ### Fichiers modifiés
-- `backend/pom.xml` - Ajout dépendances JPA/PostgreSQL
-- `backend/src/main/resources/application.yml` - Config DataSource
-- `frontend/src/app/app.component.ts` - Interface utilisateur
+- `apps/backend/pom.xml` - Ajout dépendances JPA/PostgreSQL
+- `apps/backend/src/main/resources/application.yml` - Config DataSource
+- `apps/frontend/src/app/app.component.ts` - Interface utilisateur
 - `helm/values.yaml` - Config PostgreSQL pour Minikube
 - `helm/values-azure.yaml` - Config PostgreSQL pour AKS
 - `tunnel.sh` - Ajout tunnel PostgreSQL

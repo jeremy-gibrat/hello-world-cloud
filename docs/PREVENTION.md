@@ -59,12 +59,12 @@ Ce guide explique comment éviter les problèmes rencontrés lors du déploiemen
 
 1. **Modifier le code** ✏️
    ```bash
-   # Éditer backend/src/... ou frontend/src/...
+   # Éditer apps/backend/src/... ou apps/frontend/src/...
    ```
 
 2. **Cleaner Maven si backend modifié** 🧹
    ```bash
-   cd backend && mvn clean && cd ..
+   cd apps/backend && mvn clean && cd ../..
    ```
 
 3. **Rebuilder les images** 🔨
@@ -92,12 +92,12 @@ Ce guide explique comment éviter les problèmes rencontrés lors du déploiemen
 
 1. **Modifier le code** ✏️
    ```bash
-   # Éditer backend/src/... ou frontend/src/...
+   # Éditer apps/backend/src/... ou apps/frontend/src/...
    ```
 
 2. **Cleaner Maven si backend modifié** 🧹
    ```bash
-   cd backend && mvn clean && cd ..
+   cd apps/backend && mvn clean && cd ../..
    ```
 
 3. **Rebuilder et pousser** 🔨

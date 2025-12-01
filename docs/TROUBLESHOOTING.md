@@ -3,7 +3,7 @@
 ## Problème: Les changements de code n'apparaissent pas après rebuild
 
 ### Symptômes
-- Vous modifiez le code backend/frontend
+- Vous modifiez le code apps/backend/apps/frontend
 - Vous exécutez `./build-images.sh`
 - Vous redéployez avec `kubectl rollout restart`
 - **Mais l'ancienne version continue de tourner** 😤
@@ -194,7 +194,7 @@ curl http://localhost:8081/api/users/count
 
 #### 1. Vérifier que le contrôleur existe dans le code
 ```bash
-ls backend/src/main/java/com/hello/controller/UserController.java
+ls apps/backend/src/main/java/com/hello/controller/UserController.java
 ```
 
 #### 2. Vérifier que l'image a été reconstruite

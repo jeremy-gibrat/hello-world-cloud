@@ -1,346 +1,274 @@
-# Hello World - Kubernetes avec Helm
+# Hello World - Kubernetes Application
 
-Application complète déployée sur Minikube ou Azure AKS avec backend Java Spring Boot, frontend Angular, RabbitMQ et stack ELK (Elasticsearch, Logstash, Kibana).
+Application full-stack déployable sur Minikube ou Azure AKS avec backend Java Spring Boot, frontend Angular, et stack complète (PostgreSQL, RabbitMQ, Elasticsearch, Logstash, Kibana).
 
-## 📋 Prérequis
-
-- Docker avec buildx (multi-platform)
-- Minikube ou Azure CLI
-- Helm 3
-- kubectl
-- Terraform (pour Azure)
-- Java 17+ (pour développement local)
-- Node.js 20+ (pour développement local)
-
-## 🏗️ Architecture
-
-- **Backend**: Spring Boot (Java 17) avec API REST, RabbitMQ, Elasticsearch et PostgreSQL
-- **Frontend**: Angular 17 avec sections RabbitMQ, Elasticsearch et PostgreSQL
-- **PostgreSQL**: Base de données avec gestion des utilisateurs
-- **RabbitMQ**: Message broker avec interface admin
-- **Elasticsearch**: Moteur de recherche et stockage de logs
-- **Logstash**: Pipeline d'ingestion de logs
-- **Kibana**: Interface de visualisation Elasticsearch
-
-## 📚 Documentation
-
-- [⚡ QUICKREF.md](QUICKREF.md) - **Référence rapide des commandes**
-- [🔐 SECRETS.md](SECRETS.md) - **Gestion sécurisée des secrets et mots de passe**
-- [🚀 AZURE.md](AZURE.md) - Guide complet Azure AKS avec Terraform
-- [🐘 POSTGRESQL.md](POSTGRESQL.md) - Documentation PostgreSQL et API users
-- [🛠️ TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Résolution des problèmes courants
-- [🛡️ PREVENTION.md](PREVENTION.md) - **Comment éviter les problèmes de cache**
-
-## 💰 Coûts Azure (Configuration Optimale)
-
-**Configuration Recommandée: ~22-25€/mois**
-- **VM**: Standard_B2s (2 vCPU, 4 GB RAM) - ~22€/mois
-- **AKS**: Free tier - 0€
-- **Services**: Tous en ClusterIP (pas de LoadBalancer) - 0€
-- **Stockage + Bande passante**: ~3-5€/mois
-- **Accès**: Via tunnel SSH/kubectl port-forward
-
-**Alternatives:**
-- Standard_B1s (1 vCPU, 1 GB): ~10€/mois - Trop juste pour ELK
-- Standard_B2s_v2 (2 vCPU, 8 GB): ~30€/mois - Marge confortable
-- Standard_D2s_v3 (2 vCPU, 8 GB): ~35€/mois - Meilleure performance
-
-## 🚀 Déploiement Azure AKS
-
-### 1. Configuration Terraform
-
-Éditez `terraform/terraform.tfvars` avec vos informations:
-```bash
-ghcr_username = "votre-username-github"
-ghcr_token    = "ghp_votre_token_github"
-```
-
-### 2. Créer l'infrastructure
+## 🚀 Démarrage Rapide
 
 ```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
+# 1. Installation initiale
+make init
 
-### 3. Construire et publier les images
+# 2. Configurez vos credentials dans .env
+# Éditez .env avec vos informations
 
-```bash
-./build-images.sh
-```
-
-### 4. Déployer l'application
-
-```bash
-./azure-deploy.sh
-```
-
-### 5. Accéder aux services via tunnel
-
-```bash
-./tunnel.sh
-```
-
-Cette commande crée des tunnels vers:
-- **Frontend**: http://localhost:8080
-- **Backend API**: http://localhost:8081
-- **RabbitMQ Admin**: http://localhost:15672 (guest/guest)
-- **Kibana**: http://localhost:5601
-
-Appuyez sur `Ctrl+C` pour arrêter les tunnels.
-
-## 🚇 Utilisation du tunnel
-
-Le script `tunnel.sh` remplace les LoadBalancers coûteux (~36€/mois) par des tunnels SSH gratuits:
-
-```bash
-# Démarrer tous les tunnels
-./tunnel.sh
-
-# Dans un autre terminal, vous pouvez aussi créer des tunnels individuels
-kubectl port-forward service/hello-world-frontend-service 8080:80
-kubectl port-forward service/rabbitmq-service 15672:15672
-kubectl port-forward service/kibana-service 5601:5601
-```
-
-## 🚀 Déploiement Minikube (Local)
-
-### 1. Démarrer Minikube
-
-```bash
+# 3. Déploiement local (Minikube)
 minikube start
-```
+make full-local
 
-### 2. Construire et charger les images Docker
-
-```bash
-chmod +x build-images.sh
-./build-images.sh
-```
-
-Cette commande:
-- Construit l'image Docker du backend
-- Construit l'image Docker du frontend
-- Charge les images dans Minikube
-
-### 3. Déployer avec Helm
-
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
-Cette commande:
-- Installe ou met à jour le chart Helm
-- Attend que les pods soient prêts
-- Affiche l'état du déploiement
-
-### 4. Accéder à l'application
-
-Option 1 - Via Minikube service:
-```bash
+# 4. Accéder à l'application
 minikube service hello-world-frontend-service
 ```
 
-Option 2 - Via port-forward:
+## 📋 Commandes Principales
+
 ```bash
-kubectl port-forward service/hello-world-frontend-service 8081:80
+make help             # Afficher toutes les commandes disponibles
+
+# Développement Local (Minikube)
+make build-local      # Construire les images
+make deploy-local     # Déployer sur Minikube
+make full-local       # Build + Deploy
+
+# Développement Azure (AKS)
+make build-azure      # Build et push vers GHCR
+make deploy-azure     # Déployer sur Azure
+make full-azure       # Build + Deploy
+
+# Utilitaires
+make status           # État du cluster
+make logs-backend     # Logs du backend
+make tunnel           # Tunnels SSH (Azure)
+make restart-backend  # Redémarrer le backend
+make clean            # Nettoyer l'environnement
 ```
-Puis ouvrez http://localhost:8081 dans votre navigateur.
 
-## 📊 Commandes utiles
+## 🏗️ Architecture
 
-### Vérifier le statut
+- **Backend**: Spring Boot (Java 17) - API REST, RabbitMQ, Elasticsearch, PostgreSQL
+- **Frontend**: Angular 17 - Interface utilisateur moderne
+- **Base de données**: PostgreSQL - Gestion des utilisateurs
+- **Message Broker**: RabbitMQ - Communication asynchrone
+- **Logs & Analytics**: ELK Stack (Elasticsearch, Logstash, Kibana)
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [`docs/QUICKREF.md`](docs/QUICKREF.md) | ⚡ Référence rapide des commandes |
+| [`docs/SCRIPTS.md`](docs/SCRIPTS.md) | 📜 Documentation des scripts et Makefile |
+| [`docs/SECRETS.md`](docs/SECRETS.md) | 🔐 Gestion des secrets et mots de passe |
+| [`docs/AZURE.md`](docs/AZURE.md) | ☁️ Guide Azure AKS avec Terraform |
+| [`docs/POSTGRESQL.md`](docs/POSTGRESQL.md) | 🐘 Documentation PostgreSQL et API |
+| [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | 🛠️ Résolution des problèmes |
+| [`docs/PREVENTION.md`](docs/PREVENTION.md) | 🛡️ Prévention des problèmes de cache |
+| [`docs/MIGRATION.md`](docs/MIGRATION.md) | 🔄 Migration vers nouvelle architecture |
+
+## 💰 Coûts Azure
+
+**Configuration Recommandée: ~22-25€/mois**
+- VM Standard_B2s (2 vCPU, 4 GB RAM): ~22€/mois
+- AKS Free tier: 0€
+- Services en ClusterIP (pas de LoadBalancer): 0€
+- Stockage + Bande passante: ~3-5€/mois
+- Accès via tunnels SSH (gratuit)
+
+## 🛠️ Prérequis
+
+- **Docker** (avec buildx pour multi-platform)
+- **Minikube** ou **Azure CLI**
+- **Helm 3**
+- **kubectl**
+- **Terraform** (pour Azure)
+- **Java 17+** (développement local)
+- **Node.js 20+** (développement local)
+
 ```bash
-chmod +x status.sh
-./status.sh
+# Installation automatique des prérequis (MacOS)
+make install-prereqs
 ```
 
-### Voir les logs en temps réel
-```bash
-# Backend
-kubectl logs -f -l app=hello-world-backend
+## 🔧 Configuration
 
+### Fichier `.env`
+
+Copiez `.env.example` et configurez vos credentials :
+
+```bash
+# GitHub Container Registry (pour Azure)
+GHCR_USERNAME="your-github-username"
+GHCR_TOKEN="ghp_your_token"
+
+# Azure
+RESOURCE_GROUP_NAME="rg-hello-world"
+CLUSTER_NAME="aks-hello-world"
+
+# Application Secrets
+POSTGRES_PASSWORD="your_secure_password"
+RABBITMQ_PASSWORD="your_secure_password"
+```
+
+## 🌐 Accès aux Services
+
+### Minikube
+
+```bash
 # Frontend
-kubectl logs -f -l app=hello-world-frontend
-```
+minikube service hello-world-frontend-service
 
-### Redémarrer les pods
-```bash
-kubectl rollout restart deployment/hello-world-backend
-kubectl rollout restart deployment/hello-world-frontend
-```
-
-### Nettoyer le déploiement
-```bash
-chmod +x cleanup.sh
-./cleanup.sh
-```
-
-## 🔧 Développement local
-
-### Backend
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-L'API sera disponible sur http://localhost:8080/api/hello
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-L'application sera disponible sur http://localhost:4200
-
-## 🎨 Structure du projet
-
-```
-hello-world/
-├── backend/                    # Application Spring Boot
-│   ├── src/
-│   ├── pom.xml
-│   └── Dockerfile
-├── frontend/                   # Application Angular
-│   ├── src/
-│   ├── package.json
-│   ├── nginx.conf
-│   └── Dockerfile
-├── helm/                       # Chart Helm
-│   ├── Chart.yaml
-│   ├── values.yaml
-│   └── templates/
-│       ├── backend-deployment.yaml
-│       ├── backend-service.yaml
-│       ├── frontend-deployment.yaml
-│       └── frontend-service.yaml
-├── build-images.sh            # Script de build
-├── deploy.sh                  # Script de déploiement
-├── cleanup.sh                 # Script de nettoyage
-├── status.sh                  # Script de statut
-└── README.md
-```
-
-## 🔍 Configuration Helm
-
-Le chart Helm peut être personnalisé via `helm/values.yaml`:
-
-```yaml
-backend:
-  replicaCount: 1              # Nombre de réplicas backend
-  image:
-    repository: hello-backend
-    tag: latest
-
-frontend:
-  replicaCount: 1              # Nombre de réplicas frontend
-  service:
-    nodePort: 30080           # Port NodePort
-```
-
-### Déployer avec des valeurs personnalisées
-
-```bash
-helm upgrade --install hello-world ./helm \
-  --set backend.replicaCount=2 \
-  --set frontend.replicaCount=2
-```
-
-## 🐛 Dépannage
-
-### Les pods ne démarrent pas
-
-```bash
-kubectl describe pod <pod-name>
-kubectl logs <pod-name>
-```
-
-### Les images ne sont pas trouvées
-
-Vérifiez que les images sont bien dans Minikube:
-```bash
-minikube image ls | grep hello
-```
-
-Si besoin, rechargez-les:
-```bash
-./build-images.sh
-```
-
-### Le frontend ne peut pas contacter le backend
-
-Vérifiez que le service backend est accessible:
-```bash
-kubectl get svc hello-backend-service
-kubectl exec -it <frontend-pod> -- curl http://hello-backend-service:8080/api/hello
-```
-
-## 📦 Reconstruire et redéployer
-
-### Minikube (local)
-```bash
-./build-images.sh
-./deploy.sh
+# Ou via port-forward
+kubectl port-forward service/hello-world-frontend-service 8081:80
+# → http://localhost:8081
 ```
 
 ### Azure AKS
+
 ```bash
-# Rebuilder et pousser les images (--no-cache automatique)
-./build-and-push-azure.sh
+# Créer des tunnels SSH (recommandé - gratuit)
+make tunnel
 
-# Recharger les images sur le cluster
-./azure-reload-images.sh
-
-# Vérifier le statut
-./azure-status.sh
+# Services accessibles :
+# → Frontend:  http://localhost:8080
+# → Backend:   http://localhost:8081
+# → RabbitMQ:  http://localhost:15672 (guest/guest)
+# → Kibana:    http://localhost:5601
 ```
 
-## ⚠️ Problèmes fréquents et solutions
+## 🔍 Développement
 
-### Cache Docker qui empêche les changements
-
-**Symptôme**: Modifications de code non visibles après rebuild
-
-**Solutions**:
-- **Minikube**: Utilisez `./build-images.sh` (--no-cache automatique)
-- **Azure**: Utilisez `./build-and-push-azure.sh` (--no-cache automatique)
-- Consultez [TROUBLESHOOTING.md](TROUBLESHOOTING.md) pour plus de détails
-
-### Rollout restart échoue sur Azure (Insufficient CPU)
-
-**Symptôme**: `kubectl rollout restart` timeout avec erreur CPU
-
-**Solution**: Utilisez `./azure-reload-images.sh` qui supprime/recrée les pods un par un
-
-### Image non mise à jour sur Azure
-
-**Cause**: Cache buildx multi-platform
-
-**Solution**: Le flag `--no-cache` est maintenant automatique dans `build-and-push-azure.sh`
-
-📖 **Guide complet**: Consultez [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-
-## 🛑 Arrêter l'application
+### Backend (Java Spring Boot)
 
 ```bash
-./cleanup.sh
+make dev-backend      # Lance le backend en mode dev
+make test-backend     # Exécute les tests
+```
+
+### Frontend (Angular)
+
+```bash
+make dev-frontend     # Lance le frontend en mode dev
+make test-frontend    # Exécute les tests
+```
+
+## 📊 Monitoring & Debug
+
+```bash
+make status           # État du cluster
+make logs-backend     # Logs du backend en temps réel
+make logs-frontend    # Logs du frontend
+make events           # Événements Kubernetes
+
+# Debug avancé
+make debug-backend    # Shell dans le pod backend
+make describe-backend # Détails du déploiement
+DEBUG=true make deploy-local  # Mode debug
+```
+
+## 🧹 Nettoyage
+
+```bash
+# Nettoyer l'environnement actuel (auto-détecte Minikube/Azure)
+make clean
+
+# Nettoyer spécifiquement
+make clean-local      # Minikube uniquement
+make clean-azure      # Azure (optionnel: détruit l'infra)
+make clean-docker     # Images Docker locales
+make clean-all        # Nettoyage complet
+
+# Arrêter Minikube
 minikube stop
 ```
 
-## 📝 Notes
+## 🎯 Workflows Typiques
 
-- Le backend expose une API REST sur `/api/hello`
-- Le frontend appelle automatiquement le backend au démarrage
-- Les images Docker utilisent le multi-stage build pour optimiser la taille
-- Les health checks sont configurés pour Kubernetes (liveness et readiness probes)
+### Premier Déploiement Local
 
-## 🎯 Endpoints
+```bash
+make init             # Configuration initiale
+minikube start        # Démarrer Minikube
+make full-local       # Build + Deploy
+make status           # Vérifier l'état
+```
 
-- Frontend: http://<minikube-ip>:30080
-- Backend API: http://hello-backend-service:8080/api/hello (interne au cluster)
+### Développement Quotidien
+
+```bash
+# Modifier le code backend ou frontend
+make build-local      # Rebuild les images
+make restart-backend  # Redémarrer le service
+make logs-backend     # Voir les logs
+```
+
+### Déploiement Azure
+
+```bash
+make init             # Configuration initiale
+az login              # Connexion Azure
+make full-azure       # Build + Deploy sur Azure
+make tunnel           # Accès aux services
+```
+
+## 🚨 Dépannage
+
+**Problème**: Pods ne démarrent pas
+```bash
+make status
+make events
+make logs-backend
+```
+
+**Problème**: Changements de code non visibles
+```bash
+make build-local      # Rebuild avec --no-cache automatique
+make restart-backend  # Force le redémarrage
+```
+
+**Problème**: Erreurs de secrets
+```bash
+make secrets          # Recréer les secrets depuis .env
+```
+
+📖 **Guide complet**: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md)
+
+## 📁 Structure du Projet
+
+```
+hello-world/
+├── Makefile                    # Interface principale
+├── .env                        # Configuration (ne pas commiter!)
+├── scripts/                    # Scripts organisés
+│   ├── lib/                   # Bibliothèques partagées
+│   ├── local/                 # Scripts Minikube
+│   ├── azure/                 # Scripts Azure
+│   └── utils/                 # Utilitaires
+├── apps/
+│   ├── backend/               # Spring Boot API
+│   └── frontend/              # Angular App
+├── helm/                      # Kubernetes Charts
+├── terraform/                 # Infrastructure as Code
+└── docs/                      # Documentation
+```
+
+## 📝 Notes Importantes
+
+- Les secrets sont gérés via `.env` et Kubernetes Secrets (jamais hardcodés)
+- Les images sont buildées avec `--no-cache` pour éviter les problèmes de cache
+- Azure utilise des tunnels SSH pour économiser les coûts de LoadBalancer
+- Tous les scripts utilisent une gestion d'erreur robuste (`set -euo pipefail`)
+
+## 🤝 Contribution
+
+Ce projet utilise :
+- **Makefile** pour l'interface unifiée
+- **Scripts Bash** modulaires et réutilisables
+- **Helm** pour le déploiement Kubernetes
+- **Terraform** pour l'infrastructure Azure
+- **GitHub Container Registry** pour les images Docker
+
+## 📄 Licence
+
+Projet de démonstration - À des fins éducatives
+
+---
+
+**Besoin d'aide ?** Consultez `make help` ou la [documentation complète](docs/)
