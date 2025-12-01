@@ -1,6 +1,40 @@
 # Default values for hello-world chart
 # Les secrets sont maintenant gérés via Kubernetes Secrets
 # et configurés depuis le fichier .env
+
+# Namespace configuration
+namespace:
+  enabled: true
+  name: hello-world-dev
+
+# Services optionnels (activés par défaut pour Minikube)
+elasticsearch:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+logstash:
+  enabled: false
+  resources:
+    limits:
+      cpu: 300m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+kibana:
+  enabled: false
+  service:
+    type: NodePort
+    port: 5601
+    nodePort: 30601
+
 postgres:
   resources:
     limits:
@@ -51,11 +85,5 @@ frontend:
     requests:
       cpu: 100m
       memory: 128Mi
-
-kibana:
-  service:
-    type: NodePort
-    port: 5601
-    nodePort: 30601
 
 

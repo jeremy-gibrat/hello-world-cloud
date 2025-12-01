@@ -1,5 +1,37 @@
 # Values pour le déploiement sur Azure AKS avec GitHub Container Registry
 
+# Namespace configuration
+namespace:
+  enabled: true
+  name: hello-world-prod
+
+# Services optionnels (désactivés par défaut pour économiser des ressources)
+elasticsearch:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+
+logstash:
+  enabled: false
+  resources:
+    limits:
+      cpu: 300m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+kibana:
+  enabled: false
+  service:
+    type: ClusterIP
+    port: 5601
+
 rabbitmq:
   service:
     type: ClusterIP
@@ -12,11 +44,11 @@ postgres:
   password: hellopass123
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 300m
+      memory: 384Mi
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 128Mi
 
 backend:
   replicaCount: 1
@@ -25,7 +57,7 @@ backend:
     # Ex: ghcr.io/YOUR-GITHUB-USERNAME/hello-backend
     repository: ghcr.io/jeremy-gibrat/hello-backend
     tag: latest
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   
   # Pull secret pour GHCR (créé par Terraform)
   imagePullSecrets:
@@ -37,11 +69,11 @@ backend:
   
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 300m
+      memory: 384Mi
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 128Mi
 
 frontend:
   replicaCount: 1
@@ -50,7 +82,7 @@ frontend:
     # Ex: ghcr.io/YOUR-GITHUB-USERNAME/hello-frontend
     repository: ghcr.io/jeremy-gibrat/hello-frontend
     tag: latest
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   
   # Pull secret pour GHCR (créé par Terraform)
   imagePullSecrets:
@@ -65,30 +97,7 @@ frontend:
       cpu: 200m
       memory: 256Mi
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 128Mi
-
-kibana:
-  service:
-    type: ClusterIP
-    port: 5601
-
-elasticsearch:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 512Mi
-
-logstash:
-  resources:
-    limits:
-      cpu: 300m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
 
 

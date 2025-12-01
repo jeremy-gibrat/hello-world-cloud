@@ -81,10 +81,11 @@ log_step "Vérification du cluster..."
 kubectl cluster-info
 kubectl get nodes
 
-# Créer les secrets Kubernetes
-create_k8s_secrets || exit 1
+# Déterminer le namespace depuis values-azure.yaml
+NAMESPACE=$(awk '/^namespace:/,/^  name:/ {if (/^  name:/) print $2}' "$PROJECT_ROOT/helm/values-azure.yaml")
+log_debug "Namespace: $NAMESPACE"
 
-# Déployer avec Helm
+# Déployer avec Helm d'abord pour créer le namespace
 separator
 log_step "Déploiement de l'application avec Helm..."
 
@@ -97,11 +98,14 @@ if ! grep -q "your-github-username" "$PROJECT_ROOT/helm/values-azure.yaml" 2>/de
     fi
 fi
 
-helm_deploy "$RELEASE_NAME" "$PROJECT_ROOT/helm" "$PROJECT_ROOT/helm/values-azure.yaml"
+helm_deploy "$RELEASE_NAME" "$PROJECT_ROOT/helm" "$PROJECT_ROOT/helm/values-azure.yaml" "$NAMESPACE"
+
+# Créer les secrets Kubernetes après que le namespace existe
+create_k8s_secrets "$NAMESPACE" || exit 1
 
 # Attendre que les pods soient prêts
-wait_for_pods "app=hello-world-backend" 600 || true
-wait_for_pods "app=hello-world-frontend" 300 || true
+wait_for_pods "app=hello-world-backend" 600 "$NAMESPACE" || true
+wait_for_pods "app=hello-world-frontend" 300 "$NAMESPACE" || true
 
 separator
 log_success "Application déployée avec succès sur Azure AKS!"

@@ -14,6 +14,15 @@ separator
 log_step "Création des tunnels vers les services"
 separator
 
+# Détecter le contexte pour déterminer le namespace
+CONTEXT=$(kubectl config current-context)
+if [[ "$CONTEXT" == *"minikube"* ]]; then
+    NAMESPACE="hello-world-dev"
+else
+    NAMESPACE="hello-world-prod"
+fi
+
+log_info "Namespace: $NAMESPACE"
 log_info "Tunnels créés:"
 log_info "  Frontend:  http://localhost:8080"
 log_info "  Backend:   http://localhost:8081"
@@ -25,10 +34,10 @@ log_warning "Appuyez sur Ctrl+C pour arrêter les tunnels"
 separator
 
 # Créer les tunnels (cette commande bloque)
-kubectl port-forward service/hello-world-frontend-service 8080:80 &
-kubectl port-forward service/hello-world-backend-service 8081:8080 &
-kubectl port-forward service/rabbitmq-service 15672:15672 &
-kubectl port-forward service/kibana-service 5601:5601 &
+kubectl port-forward -n $NAMESPACE service/hello-world-frontend-service 8080:80 &
+kubectl port-forward -n $NAMESPACE service/hello-world-backend-service 8081:8080 &
+kubectl port-forward -n $NAMESPACE service/rabbitmq-service 15672:15672 &
+kubectl port-forward -n $NAMESPACE service/kibana-service 5601:5601 &
 
 # Attendre l'interruption
 wait

@@ -77,16 +77,22 @@ ensure_aks_context() {
 wait_for_pods() {
     local label="$1"
     local timeout="${2:-300}"
+    local namespace="${3:-}"
+    
+    local namespace_flag=""
+    if [ -n "$namespace" ]; then
+        namespace_flag="-n $namespace"
+    fi
     
     log_step "Attente du démarrage des pods ($label)..."
     
-    if kubectl wait --for=condition=ready pod -l "$label" --timeout="${timeout}s" 2>/dev/null; then
+    if kubectl wait --for=condition=ready pod -l "$label" $namespace_flag --timeout="${timeout}s" 2>/dev/null; then
         log_success "Pods prêts ($label)"
         return 0
     else
         log_warning "Timeout lors de l'attente des pods ($label)"
         log_info "Vérification de l'état des pods..."
-        kubectl get pods -l "$label"
+        kubectl get pods -l "$label" $namespace_flag
         return 1
     fi
 }
@@ -109,6 +115,8 @@ wait_for_deployment() {
 
 # Créer ou mettre à jour les secrets depuis .env
 create_k8s_secrets() {
+    local namespace="${1:-}"
+    
     log_step "Création des secrets Kubernetes depuis .env..."
     
     # Vérifier que les variables sont définies
@@ -124,6 +132,11 @@ create_k8s_secrets() {
         return 1
     fi
     
+    local namespace_flag=""
+    if [ -n "$namespace" ]; then
+        namespace_flag="-n $namespace"
+    fi
+    
     # Créer le secret
     kubectl create secret generic app-secrets \
         --from-literal=postgres-db="$POSTGRES_DB" \
@@ -131,7 +144,8 @@ create_k8s_secrets() {
         --from-literal=postgres-password="$POSTGRES_PASSWORD" \
         --from-literal=rabbitmq-user="$RABBITMQ_USER" \
         --from-literal=rabbitmq-password="$RABBITMQ_PASSWORD" \
-        --dry-run=client -o yaml | kubectl apply -f -
+        $namespace_flag \
+        --dry-run=client -o yaml | kubectl apply $namespace_flag -f -
     
     if [ $? -eq 0 ]; then
         log_success "Secret 'app-secrets' créé/mis à jour"
@@ -147,6 +161,7 @@ helm_deploy() {
     local release_name="$1"
     local chart_path="$2"
     local values_file="${3:-}"
+    local namespace="${4:-}"
     
     log_step "Déploiement avec Helm..."
     
@@ -154,6 +169,10 @@ helm_deploy() {
     
     if [ -n "$values_file" ]; then
         helm_cmd="$helm_cmd -f $values_file"
+    fi
+    
+    if [ -n "$namespace" ]; then
+        helm_cmd="$helm_cmd -n $namespace --create-namespace"
     fi
     
     log_debug "Commande Helm: $helm_cmd"

@@ -27,15 +27,19 @@ ensure_minikube_context || exit 1
 # Charger la configuration
 load_env || exit 1
 
-# Créer les secrets Kubernetes
-create_k8s_secrets || exit 1
+# Déterminer le namespace depuis values.yaml
+NAMESPACE=$(awk '/^namespace:/,/^  name:/ {if (/^  name:/) print $2}' "$PROJECT_ROOT/helm/values.yaml")
+log_debug "Namespace: $NAMESPACE"
 
-# Déployer avec Helm
-helm_deploy "$RELEASE_NAME" "$PROJECT_ROOT/helm"
+# Déployer avec Helm d'abord pour créer le namespace
+helm_deploy "$RELEASE_NAME" "$PROJECT_ROOT/helm" "" "$NAMESPACE"
+
+# Créer les secrets Kubernetes après que le namespace existe
+create_k8s_secrets "$NAMESPACE" || exit 1
 
 # Attendre que les pods soient prêts
-wait_for_pods "app=hello-world-backend" 120
-wait_for_pods "app=hello-world-frontend" 120
+wait_for_pods "app=hello-world-backend" 120 "$NAMESPACE"
+wait_for_pods "app=hello-world-frontend" 120 "$NAMESPACE"
 
 # Redémarrer les déploiements pour s'assurer d'utiliser les dernières images
 log_step "Redémarrage des déploiements pour garantir les dernières images..."

@@ -1,3 +1,4 @@
+{{- if .Values.logstash.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -66,3 +67,4 @@ data:
         codec => rubydebug
       }
     }
+{{- end }}
