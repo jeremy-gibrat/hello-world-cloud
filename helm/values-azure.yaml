@@ -33,12 +33,14 @@ kibana:
     port: 5601
 
 rabbitmq:
+  enabled: true
   service:
     type: ClusterIP
     amqpPort: 5672
     managementPort: 15672
 
 postgres:
+  enabled: true
   database: hellodb
   username: hellouser
   password: hellopass123
@@ -51,6 +53,7 @@ postgres:
       memory: 128Mi
 
 backend:
+  enabled: true
   replicaCount: 1
   image:
     # Remplacez 'YOUR-GITHUB-USERNAME' par votre nom d'utilisateur GitHub
@@ -76,6 +79,7 @@ backend:
       memory: 128Mi
 
 frontend:
+  enabled: true
   replicaCount: 1
   image:
     # Remplacez 'YOUR-GITHUB-USERNAME' par votre nom d'utilisateur GitHub

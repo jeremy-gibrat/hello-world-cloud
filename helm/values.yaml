@@ -36,6 +36,7 @@ kibana:
     nodePort: 30601
 
 postgres:
+  enabled: true
   resources:
     limits:
       cpu: 500m
@@ -45,6 +46,7 @@ postgres:
       memory: 256Mi
 
 rabbitmq:
+  enabled: true
   # Credentials gérés via Kubernetes Secrets
   service:
     type: NodePort
@@ -52,6 +54,7 @@ rabbitmq:
     managementNodePort: 30673
 
 backend:
+  enabled: true
   replicaCount: 1
   image:
     repository: hello-backend
@@ -69,6 +72,7 @@ backend:
       memory: 256Mi
 
 frontend:
+  enabled: true
   replicaCount: 1
   image:
     repository: hello-frontend

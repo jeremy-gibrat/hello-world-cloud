@@ -1,3 +1,4 @@
+{{- if .Values.rabbitmq.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -58,3 +59,4 @@ spec:
           initialDelaySeconds: 20
           periodSeconds: 10
           timeoutSeconds: 5
+{{- end }}

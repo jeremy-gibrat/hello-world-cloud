@@ -1,3 +1,4 @@
+{{- if .Values.frontend.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,3 +40,4 @@ spec:
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 5
+{{- end }}
