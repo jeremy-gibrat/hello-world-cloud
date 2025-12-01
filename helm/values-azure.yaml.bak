@@ -1,10 +1,28 @@
 # Values pour le déploiement sur Azure AKS avec GitHub Container Registry
 
+rabbitmq:
+  service:
+    type: ClusterIP
+    amqpPort: 5672
+    managementPort: 15672
+
+postgres:
+  database: hellodb
+  username: hellouser
+  password: hellopass123
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
 backend:
   replicaCount: 1
   image:
     # Remplacez 'YOUR-GITHUB-USERNAME' par votre nom d'utilisateur GitHub
-    # Ex: ghcr.io/jeremygibrat/hello-backend
+    # Ex: ghcr.io/YOUR-GITHUB-USERNAME/hello-backend
     repository: ghcr.io/jeremy-gibrat/hello-backend
     tag: latest
     pullPolicy: Always
@@ -22,16 +40,16 @@ backend:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 250m
+      cpu: 100m
       memory: 256Mi
+
 frontend:
   replicaCount: 1
   image:
     # Remplacez 'YOUR-GITHUB-USERNAME' par votre nom d'utilisateur GitHub
-    # Ex: ghcr.io/jeremygibrat/hello-frontend
+    # Ex: ghcr.io/YOUR-GITHUB-USERNAME/hello-frontend
     repository: ghcr.io/jeremy-gibrat/hello-frontend
     tag: latest
-    pullPolicy: Always
     pullPolicy: Always
   
   # Pull secret pour GHCR (créé par Terraform)
@@ -50,12 +68,6 @@ frontend:
       cpu: 100m
       memory: 128Mi
 
-rabbitmq:
-  service:
-    type: ClusterIP
-    amqpPort: 5672
-    managementPort: 15672
-
 kibana:
   service:
     type: ClusterIP
@@ -67,7 +79,7 @@ elasticsearch:
       cpu: 500m
       memory: 1Gi
     requests:
-      cpu: 250m
+      cpu: 100m
       memory: 512Mi
 
 logstash:
@@ -76,5 +88,7 @@ logstash:
       cpu: 300m
       memory: 512Mi
     requests:
-      cpu: 150m
+      cpu: 100m
       memory: 256Mi
+
+

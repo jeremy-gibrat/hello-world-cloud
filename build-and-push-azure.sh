@@ -69,7 +69,7 @@ echo ""
 # Build Backend (multi-platform pour supporter ARM et AMD64)
 echo "🔨 Build de l'image backend (multi-platform: linux/amd64,linux/arm64)..."
 cd backend
-docker buildx build --platform linux/amd64,linux/arm64 -t "$BACKEND_IMAGE:$TAG" --push .
+docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t "$BACKEND_IMAGE:$TAG" --push .
 
 if [ $? -ne 0 ]; then
     echo "❌ Échec du build backend"
@@ -82,7 +82,7 @@ echo ""
 # Build Frontend (multi-platform pour supporter ARM et AMD64)
 echo "🔨 Build de l'image frontend (multi-platform: linux/amd64,linux/arm64)..."
 cd ../frontend
-docker buildx build --platform linux/amd64,linux/arm64 -t "$FRONTEND_IMAGE:$TAG" --push .
+docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t "$FRONTEND_IMAGE:$TAG" --push .
 
 if [ $? -ne 0 ]; then
     echo "❌ Échec du build frontend"

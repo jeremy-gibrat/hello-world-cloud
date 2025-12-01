@@ -266,6 +266,13 @@ Au lieu de rebuilder localement, configurez GitHub Actions pour:
 2. Les pousser vers GitHub Container Registry
 3. Utiliser `imagePullPolicy: Always` sur AKS
 
+**Pour forcer le rechargement sur Azure**, utilisez:
+```bash
+./azure-reload-images.sh
+```
+
+Ce script utilise `delete pod` au lieu de `rollout restart` pour éviter les problèmes de ressources CPU insuffisantes sur les petits clusters.
+
 ### 5. Variables d'environnement pour le développement
 
 Créer un fichier `.env.local`:

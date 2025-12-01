@@ -49,6 +49,56 @@ Vous allez builder vos images Docker localement et les pousser sur GHCR.
 
 Créez un Personal Access Token (PAT) sur GitHub :
 1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+
+## 📝 Workflow de Développement
+
+### 🆕 Premier déploiement
+```bash
+# 1. Configurer .env avec vos credentials
+cp .env.example .env
+# Éditer .env avec vos valeurs
+
+# 2. Builder et pousser les images (AVEC --no-cache)
+./build-and-push-azure.sh
+
+# 3. Déployer sur Azure
+./azure-deploy.sh
+```
+
+### 🔄 Après modification du code
+
+```bash
+# 1. Rebuilder et pousser (--no-cache est automatique maintenant)
+./build-and-push-azure.sh
+
+# 2. Recharger les images sur AKS (méthode sécurisée)
+./azure-reload-images.sh
+
+# 3. Vérifier le statut
+./azure-status.sh
+```
+
+### ⚠️ Important: Problème de cache Docker Buildx
+
+**Symptôme**: Vous modifiez le code, vous lancez `build-and-push-azure.sh`, mais les changements n'apparaissent pas sur Azure.
+
+**Cause**: Docker buildx peut utiliser son cache même avec les nouvelles modifications.
+
+**Solution**: Le script `build-and-push-azure.sh` utilise maintenant automatiquement `--no-cache` pour forcer un rebuild complet à chaque fois.
+
+### ⚠️ Important: Rollout restart sur petits clusters
+
+**Pourquoi pas de rollout restart automatique?**
+
+Le script `azure-deploy.sh` ne fait plus de `kubectl rollout restart` car:
+- Sur petits clusters (Standard_B2s = 2 vCPU), le rollout peut échouer avec `Insufficient CPU`
+- Kubernetes essaie de créer un nouveau pod **avant** de supprimer l'ancien
+- Avec 7 services, on atteint facilement 100% CPU utilisé
+
+**Solution recommandée**:
+```bash
+./azure-reload-images.sh  # Supprime puis recrée les pods un par un
+```
 2. Créez un token avec les scopes `read:packages` et `write:packages`
 3. Sauvegardez le token en lieu sûr
 

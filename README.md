@@ -14,12 +14,21 @@ Application complète déployée sur Minikube ou Azure AKS avec backend Java Spr
 
 ## 🏗️ Architecture
 
-- **Backend**: Spring Boot (Java 17) avec API REST, RabbitMQ et Elasticsearch
-- **Frontend**: Angular 17 avec sections RabbitMQ et Elasticsearch
+- **Backend**: Spring Boot (Java 17) avec API REST, RabbitMQ, Elasticsearch et PostgreSQL
+- **Frontend**: Angular 17 avec sections RabbitMQ, Elasticsearch et PostgreSQL
+- **PostgreSQL**: Base de données avec gestion des utilisateurs
 - **RabbitMQ**: Message broker avec interface admin
 - **Elasticsearch**: Moteur de recherche et stockage de logs
 - **Logstash**: Pipeline d'ingestion de logs
 - **Kibana**: Interface de visualisation Elasticsearch
+
+## 📚 Documentation
+
+- [⚡ QUICKREF.md](QUICKREF.md) - **Référence rapide des commandes**
+- [🚀 AZURE.md](AZURE.md) - Guide complet Azure AKS avec Terraform
+- [🐘 POSTGRESQL.md](POSTGRESQL.md) - Documentation PostgreSQL et API users
+- [🛠️ TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Résolution des problèmes courants
+- [🛡️ PREVENTION.md](PREVENTION.md) - **Comment éviter les problèmes de cache**
 
 ## 💰 Coûts Azure (Configuration Optimale)
 
@@ -273,10 +282,48 @@ kubectl exec -it <frontend-pod> -- curl http://hello-backend-service:8080/api/he
 
 ## 📦 Reconstruire et redéployer
 
+### Minikube (local)
 ```bash
 ./build-images.sh
 ./deploy.sh
 ```
+
+### Azure AKS
+```bash
+# Rebuilder et pousser les images (--no-cache automatique)
+./build-and-push-azure.sh
+
+# Recharger les images sur le cluster
+./azure-reload-images.sh
+
+# Vérifier le statut
+./azure-status.sh
+```
+
+## ⚠️ Problèmes fréquents et solutions
+
+### Cache Docker qui empêche les changements
+
+**Symptôme**: Modifications de code non visibles après rebuild
+
+**Solutions**:
+- **Minikube**: Utilisez `./build-images.sh` (--no-cache automatique)
+- **Azure**: Utilisez `./build-and-push-azure.sh` (--no-cache automatique)
+- Consultez [TROUBLESHOOTING.md](TROUBLESHOOTING.md) pour plus de détails
+
+### Rollout restart échoue sur Azure (Insufficient CPU)
+
+**Symptôme**: `kubectl rollout restart` timeout avec erreur CPU
+
+**Solution**: Utilisez `./azure-reload-images.sh` qui supprime/recrée les pods un par un
+
+### Image non mise à jour sur Azure
+
+**Cause**: Cache buildx multi-platform
+
+**Solution**: Le flag `--no-cache` est maintenant automatique dans `build-and-push-azure.sh`
+
+📖 **Guide complet**: Consultez [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## 🛑 Arrêter l'application
 
