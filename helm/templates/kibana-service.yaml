@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+  labels:
+    app: kibana
+spec:
+  type: {{ .Values.kibana.service.type | default "ClusterIP" }}
+  ports:
+  - port: {{ .Values.kibana.service.port | default 5601 }}
+    targetPort: 5601
+    name: http
+    {{- if and (eq (.Values.kibana.service.type | default "ClusterIP") "NodePort") .Values.kibana.service.nodePort }}
+    nodePort: {{ .Values.kibana.service.nodePort }}
+    {{- end }}
+  selector:
+    app: kibana

@@ -57,3 +57,8 @@ rabbitmq:
     managementPort: 15672
     amqpNodePort: 30672
     managementNodePort: 31567
+
+kibana:
+  service:
+    type: LoadBalancer
+    port: 5601

@@ -50,6 +50,40 @@ import { environment } from '../environments/environment';
           </button>
         </div>
       </div>
+
+      <div class="elasticsearch-section">
+        <h2>🔍 Elasticsearch Data</h2>
+        
+        <div class="index-selector">
+          <label for="index-select">Index:</label>
+          <select 
+            id="index-select" 
+            [(ngModel)]="selectedIndex" 
+            (change)="onIndexChange()"
+          >
+            <option *ngFor="let index of elasticsearchIndices" [value]="index">
+              {{ index }}
+            </option>
+          </select>
+          <button (click)="searchElasticsearch()" class="refresh-btn">
+            🔄 Rafraîchir
+          </button>
+        </div>
+
+        <div class="es-stats">
+          <p>Total: {{ elasticsearchTotal }} documents</p>
+        </div>
+
+        <div class="es-results" *ngIf="elasticsearchDocs.length > 0">
+          <div class="es-doc" *ngFor="let doc of elasticsearchDocs">
+            <div class="doc-id">ID: {{ doc.id }}</div>
+            <pre class="doc-content">{{ doc.source | json }}</pre>
+          </div>
+        </div>
+        <p *ngIf="elasticsearchDocs.length === 0" class="no-messages">
+          Aucun document trouvé dans cet index
+        </p>
+      </div>
     </div>
   `,
   styles: [`
@@ -206,6 +240,81 @@ import { environment } from '../environments/environment';
     .refresh-btn:hover {
       background: #38a169;
     }
+
+    .elasticsearch-section {
+      background: #fff5e6;
+      padding: 2rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+    }
+
+    .index-selector {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .index-selector label {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .index-selector select {
+      padding: 8px 16px;
+      border: 2px solid #ff9800;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      background: white;
+      cursor: pointer;
+    }
+
+    .index-selector select:focus {
+      border-color: #f57c00;
+    }
+
+    .es-stats {
+      color: #666;
+      margin: 1rem 0;
+      font-size: 1.1rem;
+    }
+
+    .es-results {
+      max-height: 500px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .es-doc {
+      background: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .doc-id {
+      font-weight: bold;
+      color: #ff9800;
+      margin-bottom: 0.5rem;
+    }
+
+    .doc-content {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      text-align: left;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
   `]
 })
 export class AppComponent implements OnInit {
@@ -214,16 +323,25 @@ export class AppComponent implements OnInit {
   error = '';
   newMessage = '';
   receivedMessages: string[] = [];
+  
+  // Elasticsearch
+  elasticsearchIndices: string[] = [];
+  selectedIndex = 'logs-2024.12.01';
+  elasticsearchDocs: any[] = [];
+  elasticsearchTotal = 0;
 
   constructor(private readonly http: HttpClient) {}
 
   ngOnInit() {
     this.fetchMessage();
     this.fetchReceivedMessages();
+    this.fetchElasticsearchIndices();
+    this.searchElasticsearch();
     
     // Auto-refresh des messages toutes les 5 secondes
     setInterval(() => {
       this.fetchReceivedMessages();
+      this.searchElasticsearch();
     }, 5000);
   }
 
@@ -281,5 +399,45 @@ export class AppComponent implements OnInit {
           console.error('Error fetching messages:', err);
         }
       });
+  }
+
+  fetchElasticsearchIndices() {
+    const backendUrl = environment.backendUrl;
+    
+    this.http.get<{indices: string[]}>(`${backendUrl}/api/elasticsearch/indices`)
+      .subscribe({
+        next: (response) => {
+          this.elasticsearchIndices = response.indices.filter(idx => !idx.startsWith('.'));
+          if (this.elasticsearchIndices.length > 0 && !this.selectedIndex) {
+            this.selectedIndex = this.elasticsearchIndices[0];
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching ES indices:', err);
+        }
+      });
+  }
+
+  searchElasticsearch() {
+    if (!this.selectedIndex) return;
+    
+    const backendUrl = environment.backendUrl;
+    
+    this.http.get<{total: number, documents: any[]}>(`${backendUrl}/api/elasticsearch/search/${this.selectedIndex}?size=10`)
+      .subscribe({
+        next: (response) => {
+          this.elasticsearchTotal = response.total;
+          this.elasticsearchDocs = response.documents;
+        },
+        error: (err) => {
+          console.error('Error searching ES:', err);
+          this.elasticsearchDocs = [];
+          this.elasticsearchTotal = 0;
+        }
+      });
+  }
+
+  onIndexChange() {
+    this.searchElasticsearch();
   }
 }
