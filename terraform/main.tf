@@ -41,12 +41,13 @@ resource "azurerm_kubernetes_cluster" "main" {
   sku_tier = "Free"
 
   default_node_pool {
-    name                = "default"
-    node_count          = var.node_count
-    vm_size             = var.node_vm_size
-    os_disk_size_gb     = 30
-    type                = "VirtualMachineScaleSets"
-    enable_auto_scaling = false
+    name                        = "default"
+    node_count                  = var.node_count
+    vm_size                     = var.node_vm_size
+    os_disk_size_gb             = 128
+    type                        = "VirtualMachineScaleSets"
+    enable_auto_scaling         = false
+    temporary_name_for_rotation = "temp"
 
     # Optimisations pour réduire les coûts
     zones = null # Pas de zones de disponibilité (coût supplémentaire)
@@ -80,26 +81,25 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.cluster_ca_certificate)
 }
 
-# Secret pour accéder à GitHub Container Registry
-resource "kubernetes_secret" "ghcr" {
-  metadata {
-    name      = "ghcr-secret"
-    namespace = "default"
-  }
-
-  type = "kubernetes.io/dockerconfigjson"
-
-  data = {
-    ".dockerconfigjson" = jsonencode({
-      auths = {
-        "ghcr.io" = {
-          username = var.ghcr_username
-          password = var.ghcr_token
-          auth     = base64encode("${var.ghcr_username}:${var.ghcr_token}")
-        }
-      }
-    })
+# Utiliser null_resource pour créer le secret après que le cluster soit prêt
+resource "null_resource" "create_ghcr_secret" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      az aks get-credentials --resource-group ${azurerm_kubernetes_cluster.main.resource_group_name} --name ${azurerm_kubernetes_cluster.main.name} --overwrite-existing
+      kubectl create secret docker-registry ghcr-secret \
+        --docker-server=ghcr.io \
+        --docker-username=${var.ghcr_username} \
+        --docker-password=${var.ghcr_token} \
+        --namespace=default \
+        --dry-run=client -o yaml | kubectl apply -f -
+    EOT
   }
 
   depends_on = [azurerm_kubernetes_cluster.main]
+  
+  triggers = {
+    cluster_id = azurerm_kubernetes_cluster.main.id
+    username   = var.ghcr_username
+    token      = md5(var.ghcr_token)
+  }
 }

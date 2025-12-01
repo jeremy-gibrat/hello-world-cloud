@@ -22,7 +22,7 @@ backend:
       cpu: 500m
       memory: 512Mi
     requests:
-      cpu: 250m
+      cpu: 100m
       memory: 256Mi
 frontend:
   replicaCount: 1
@@ -52,13 +52,29 @@ frontend:
 
 rabbitmq:
   service:
-    type: NodePort
+    type: ClusterIP
     amqpPort: 5672
     managementPort: 15672
-    amqpNodePort: 30672
-    managementNodePort: 31567
 
 kibana:
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 5601
+
+elasticsearch:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+logstash:
+  resources:
+    limits:
+      cpu: 300m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi

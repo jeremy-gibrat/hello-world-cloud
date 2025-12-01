@@ -1,23 +1,100 @@
 # Hello World - Kubernetes avec Helm
 
-Application simple déployée sur Minikube avec un backend Java Spring Boot et un frontend Angular.
+Application complète déployée sur Minikube ou Azure AKS avec backend Java Spring Boot, frontend Angular, RabbitMQ et stack ELK (Elasticsearch, Logstash, Kibana).
 
 ## 📋 Prérequis
 
-- Docker
-- Minikube
+- Docker avec buildx (multi-platform)
+- Minikube ou Azure CLI
 - Helm 3
 - kubectl
+- Terraform (pour Azure)
 - Java 17+ (pour développement local)
 - Node.js 20+ (pour développement local)
 
 ## 🏗️ Architecture
 
-- **Backend**: Spring Boot (Java 17) exposant une API REST sur le port 8080
-- **Frontend**: Angular 17 avec Nginx sur le port 80
-- **Déploiement**: Kubernetes via Helm sur Minikube
+- **Backend**: Spring Boot (Java 17) avec API REST, RabbitMQ et Elasticsearch
+- **Frontend**: Angular 17 avec sections RabbitMQ et Elasticsearch
+- **RabbitMQ**: Message broker avec interface admin
+- **Elasticsearch**: Moteur de recherche et stockage de logs
+- **Logstash**: Pipeline d'ingestion de logs
+- **Kibana**: Interface de visualisation Elasticsearch
 
-## 🚀 Démarrage rapide
+## 💰 Coûts Azure (Configuration Optimale)
+
+**Configuration Recommandée: ~22-25€/mois**
+- **VM**: Standard_B2s (2 vCPU, 4 GB RAM) - ~22€/mois
+- **AKS**: Free tier - 0€
+- **Services**: Tous en ClusterIP (pas de LoadBalancer) - 0€
+- **Stockage + Bande passante**: ~3-5€/mois
+- **Accès**: Via tunnel SSH/kubectl port-forward
+
+**Alternatives:**
+- Standard_B1s (1 vCPU, 1 GB): ~10€/mois - Trop juste pour ELK
+- Standard_B2s_v2 (2 vCPU, 8 GB): ~30€/mois - Marge confortable
+- Standard_D2s_v3 (2 vCPU, 8 GB): ~35€/mois - Meilleure performance
+
+## 🚀 Déploiement Azure AKS
+
+### 1. Configuration Terraform
+
+Éditez `terraform/terraform.tfvars` avec vos informations:
+```bash
+ghcr_username = "votre-username-github"
+ghcr_token    = "ghp_votre_token_github"
+```
+
+### 2. Créer l'infrastructure
+
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+### 3. Construire et publier les images
+
+```bash
+./build-images.sh
+```
+
+### 4. Déployer l'application
+
+```bash
+./azure-deploy.sh
+```
+
+### 5. Accéder aux services via tunnel
+
+```bash
+./tunnel.sh
+```
+
+Cette commande crée des tunnels vers:
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:8081
+- **RabbitMQ Admin**: http://localhost:15672 (guest/guest)
+- **Kibana**: http://localhost:5601
+
+Appuyez sur `Ctrl+C` pour arrêter les tunnels.
+
+## 🚇 Utilisation du tunnel
+
+Le script `tunnel.sh` remplace les LoadBalancers coûteux (~36€/mois) par des tunnels SSH gratuits:
+
+```bash
+# Démarrer tous les tunnels
+./tunnel.sh
+
+# Dans un autre terminal, vous pouvez aussi créer des tunnels individuels
+kubectl port-forward service/hello-world-frontend-service 8080:80
+kubectl port-forward service/rabbitmq-service 15672:15672
+kubectl port-forward service/kibana-service 5601:5601
+```
+
+## 🚀 Déploiement Minikube (Local)
 
 ### 1. Démarrer Minikube
 

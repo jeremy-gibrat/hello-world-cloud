@@ -4,13 +4,11 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +30,6 @@ public class ElasticsearchController {
             SearchRequest searchRequest = SearchRequest.of(s -> s
                     .index(index)
                     .size(size)
-                    .sort(sort -> sort.field(f -> f.field("@timestamp").order(co.elastic.clients.elasticsearch._types.SortOrder.Desc)))
             );
 
             SearchResponse<ObjectNode> response = elasticsearchClient.search(searchRequest, ObjectNode.class);
@@ -51,8 +48,11 @@ public class ElasticsearchController {
             result.put("documents", results);
 
             return ResponseEntity.ok(result);
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            error.put("index", index);
+            return ResponseEntity.status(500).body(error);
         }
     }
 
@@ -72,8 +72,11 @@ public class ElasticsearchController {
                     "id", response.id(),
                     "result", response.result().toString()
             ));
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            error.put("index", index);
+            return ResponseEntity.status(500).body(error);
         }
     }
 
@@ -84,10 +87,11 @@ public class ElasticsearchController {
             
             List<String> indices = response.valueBody().stream()
                     .map(record -> record.index())
+                    .filter(idx -> !idx.startsWith("."))
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(Map.of("indices", indices));
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }

@@ -7,6 +7,15 @@ set -e
 echo "🐳 Build et push des images Docker vers GHCR"
 echo ""
 
+# Charger les variables d'environnement depuis .env
+if [ -f .env ]; then
+    echo "📝 Chargement de la configuration depuis .env"
+    export $(cat .env | grep -v '^#' | xargs)
+else
+    echo "⚠️  Fichier .env non trouvé. Copiez .env.example vers .env et configurez-le."
+    exit 1
+fi
+
 # Vérifier les prérequis
 if ! command -v docker &> /dev/null; then
     echo "❌ Docker n'est pas installé"
@@ -19,16 +28,14 @@ if ! docker info &> /dev/null; then
     exit 1
 fi
 
-# Demander le username GitHub si non fourni
-if [ -z "$GITHUB_USERNAME" ]; then
-    read -p "Entrez votre username GitHub: " GITHUB_USERNAME
-fi
+# Utiliser les variables du .env
+GITHUB_USERNAME="$GHCR_USERNAME"
+GITHUB_TOKEN="$GHCR_TOKEN"
 
-# Demander le token GitHub si non fourni
-if [ -z "$GITHUB_TOKEN" ]; then
-    echo "Entrez votre GitHub Personal Access Token (PAT) avec les scopes 'write:packages' et 'read:packages':"
-    read -s GITHUB_TOKEN
-    echo ""
+# Vérifier que les variables sont définies
+if [ -z "$GITHUB_USERNAME" ] || [ -z "$GITHUB_TOKEN" ]; then
+    echo "❌ GHCR_USERNAME ou GHCR_TOKEN non défini dans .env"
+    exit 1
 fi
 
 # Connexion à GHCR

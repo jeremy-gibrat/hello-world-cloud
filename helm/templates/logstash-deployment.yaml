@@ -27,11 +27,11 @@ spec:
           value: "http://elasticsearch-service:9200"
         resources:
           limits:
-            memory: "1Gi"
-            cpu: "1000m"
-          requests:
             memory: "512Mi"
-            cpu: "500m"
+            cpu: "300m"
+          requests:
+            memory: "256Mi"
+            cpu: "150m"
         volumeMounts:
         - name: logstash-config
           mountPath: /usr/share/logstash/pipeline

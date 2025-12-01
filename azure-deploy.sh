@@ -9,6 +9,16 @@ RELEASE_NAME="hello-world"
 echo "🚀 Déploiement sur Azure AKS"
 echo ""
 
+# Charger les variables d'environnement depuis .env
+if [ -f .env ]; then
+    echo "📝 Chargement de la configuration depuis .env"
+    export $(cat .env | grep -v '^#' | xargs)
+    echo ""
+else
+    echo "⚠️  Fichier .env non trouvé. Copiez .env.example vers .env et configurez-le."
+    exit 1
+fi
+
 # Option pour builder et pousser les images
 read -p "Voulez-vous builder et pousser les images Docker avant le déploiement ? (yes/no): " build_images
 
@@ -56,11 +66,14 @@ AZURE_SUBSCRIPTION=$(az account show --query name -o tsv)
 echo "✅ Connecté à Azure (subscription: $AZURE_SUBSCRIPTION)"
 echo ""
 
-# Vérifier que terraform.tfvars existe
+# Vérifier que terraform.tfvars existe ou le générer
 if [ ! -f terraform/terraform.tfvars ]; then
-    echo "❌ Le fichier terraform/terraform.tfvars n'existe pas."
-    echo "Copiez terraform/terraform.tfvars.example vers terraform/terraform.tfvars et configurez vos valeurs."
-    exit 1
+    echo "📝 Génération de terraform/terraform.tfvars depuis .env..."
+    cd terraform
+    chmod +x generate-tfvars.sh
+    ./generate-tfvars.sh
+    cd ..
+    echo ""
 fi
 
 # Terraform - Créer l'infrastructure
@@ -135,17 +148,20 @@ fi
 
 echo ""
 echo "⏳ Attente du démarrage des pods..."
-kubectl wait --for=condition=ready pod -l app=hello-world-backend --timeout=300s
-kubectl wait --for=condition=ready pod -l app=hello-world-frontend --timeout=300s
+kubectl wait --for=condition=ready pod -l app=hello-world-backend --timeout=600s || echo "⚠️ Backend timeout - checking status..."
+kubectl wait --for=condition=ready pod -l app=hello-world-frontend --timeout=300s || echo "⚠️ Frontend timeout - checking status..."
 
 # Forcer le redémarrage pour s'assurer d'utiliser les dernières images
 echo ""
 echo "🔄 Redémarrage des déploiements pour garantir les dernières images..."
-kubectl rollout restart deployment/hello-world-backend deployment/hello-world-frontend deployment/rabbitmq
+kubectl rollout restart deployment/hello-world-backend deployment/hello-world-frontend deployment/rabbitmq deployment/elasticsearch deployment/logstash deployment/kibana
 echo "⏳ Attente de la mise à jour..."
 kubectl rollout status deployment/hello-world-backend --timeout=300s
 kubectl rollout status deployment/hello-world-frontend --timeout=300s
 kubectl rollout status deployment/rabbitmq --timeout=300s
+kubectl rollout status deployment/elasticsearch --timeout=300s
+kubectl rollout status deployment/logstash --timeout=300s
+kubectl rollout status deployment/kibana --timeout=300s
 
 echo ""
 echo "✅ Application déployée avec succès sur Azure AKS!"

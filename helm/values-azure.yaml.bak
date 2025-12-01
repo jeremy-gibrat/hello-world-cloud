@@ -39,9 +39,8 @@ frontend:
     - name: ghcr-secret
   
   service:
-    type: NodePort
+    type: LoadBalancer
     port: 80
-    nodePort: 30080
   
   resources:
     limits:
@@ -53,8 +52,29 @@ frontend:
 
 rabbitmq:
   service:
-    type: NodePort
+    type: ClusterIP
     amqpPort: 5672
     managementPort: 15672
-    amqpNodePort: 30672
-    managementNodePort: 31567
+
+kibana:
+  service:
+    type: ClusterIP
+    port: 5601
+
+elasticsearch:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+logstash:
+  resources:
+    limits:
+      cpu: 300m
+      memory: 512Mi
+    requests:
+      cpu: 150m
+      memory: 256Mi
