@@ -1,4 +1,21 @@
 # Default values for hello-world chart
+postgres:
+  database: hellodb
+  username: hellouser
+  password: hellopass123
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+rabbitmq:
+  service:
+    type: NodePort
+    amqpNodePort: 30672
+    managementNodePort: 30673
 
 backend:
   replicaCount: 1
@@ -35,26 +52,10 @@ frontend:
       cpu: 100m
       memory: 128Mi
 
-rabbitmq:
-  service:
-    type: NodePort
-    amqpNodePort: 30672
-    managementNodePort: 30673
-
 kibana:
   service:
     type: NodePort
     port: 5601
     nodePort: 30601
 
-postgres:
-  database: hellodb
-  username: hellouser
-  password: hellopass123
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 200m
-      memory: 256Mi
+
