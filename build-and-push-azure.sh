@@ -49,62 +49,49 @@ BACKEND_IMAGE="$GHCR_REPO/hello-backend"
 FRONTEND_IMAGE="$GHCR_REPO/hello-frontend"
 TAG="latest"
 
-# Build Backend
-echo "🔨 Build de l'image backend..."
+# Vérifier et créer le builder buildx si nécessaire
+echo "🔧 Configuration de Docker buildx..."
+if ! docker buildx ls | grep -q "multiplatform"; then
+    docker buildx create --name multiplatform --use
+    docker buildx inspect --bootstrap
+else
+    docker buildx use multiplatform
+fi
+echo ""
+
+# Build Backend (multi-platform pour supporter ARM et AMD64)
+echo "🔨 Build de l'image backend (multi-platform: linux/amd64,linux/arm64)..."
 cd backend
-docker build -t "$BACKEND_IMAGE:$TAG" .
+docker buildx build --platform linux/amd64,linux/arm64 -t "$BACKEND_IMAGE:$TAG" --push .
 
 if [ $? -ne 0 ]; then
     echo "❌ Échec du build backend"
     exit 1
 fi
 
-echo "✅ Image backend buildée: $BACKEND_IMAGE:$TAG"
+echo "✅ Image backend buildée et poussée: $BACKEND_IMAGE:$TAG"
 echo ""
 
-# Build Frontend
-echo "🔨 Build de l'image frontend..."
+# Build Frontend (multi-platform pour supporter ARM et AMD64)
+echo "🔨 Build de l'image frontend (multi-platform: linux/amd64,linux/arm64)..."
 cd ../frontend
-docker build -t "$FRONTEND_IMAGE:$TAG" .
+docker buildx build --platform linux/amd64,linux/arm64 -t "$FRONTEND_IMAGE:$TAG" --push .
 
 if [ $? -ne 0 ]; then
     echo "❌ Échec du build frontend"
     exit 1
 fi
 
-echo "✅ Image frontend buildée: $FRONTEND_IMAGE:$TAG"
+echo "✅ Frontend buildée et poussée: $FRONTEND_IMAGE:$TAG"
 echo ""
 cd ..
 
-# Push des images
-echo "📤 Push de l'image backend vers GHCR..."
-docker push "$BACKEND_IMAGE:$TAG"
-
-if [ $? -ne 0 ]; then
-    echo "❌ Échec du push backend"
-    exit 1
-fi
-
-echo "✅ Backend poussé sur GHCR"
-echo ""
-
-echo "📤 Push de l'image frontend vers GHCR..."
-docker push "$FRONTEND_IMAGE:$TAG"
-
-if [ $? -ne 0 ]; then
-    echo "❌ Échec du push frontend"
-    exit 1
-fi
-
-echo "✅ Frontend poussé sur GHCR"
-echo ""
-
 # Résumé
-echo "🎉 Images Docker buildées et poussées avec succès!"
+echo "🎉 Images Docker buildées et poussées avec succès (multi-platform)!"
 echo ""
 echo "📦 Images disponibles sur:"
-echo "   Backend:  $BACKEND_IMAGE:$TAG"
-echo "   Frontend: $FRONTEND_IMAGE:$TAG"
+echo "   Backend:  $BACKEND_IMAGE:$TAG (linux/amd64, linux/arm64)"
+echo "   Frontend: $FRONTEND_IMAGE:$TAG (linux/amd64, linux/arm64)"
 echo ""
 echo "💡 Prochaines étapes:"
 echo "   1. Vérifiez que helm/values-azure.yaml utilise les bonnes images"

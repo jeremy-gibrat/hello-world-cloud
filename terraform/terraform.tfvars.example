@@ -8,10 +8,10 @@ cluster_name        = "aks-hello-world"
 
 # Configuration des nodes (ajustez selon votre budget)
 node_count   = 1              # 1 node pour les tests
-node_vm_size = "Standard_B2s" # B1s (~10€/mois) ou B2s (~30€/mois)
+node_vm_size = "Standard_B2s_v2" # B2s_v2 (~30€/mois), alternatives: D2s_v3, D2as_v4
 
-# Version Kubernetes
-kubernetes_version = "1.29"
+# Version Kubernetes (1.30, 1.31, ou 1.32 recommandées pour tier Free)
+kubernetes_version = "1.30"
 
 # GitHub Container Registry credentials
 # Créez un Personal Access Token (PAT) sur GitHub avec le scope 'read:packages'

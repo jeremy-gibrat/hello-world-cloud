@@ -25,15 +25,15 @@ variable "node_count" {
 }
 
 variable "node_vm_size" {
-  description = "Taille des VMs pour les nodes (B1s = ~10€/mois, B2s = ~30€/mois)"
+  description = "Taille des VMs pour les nodes (B2s_v2 = ~30€/mois, D2s_v3 = alternative)"
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B2s_v2"
 }
 
 variable "kubernetes_version" {
   description = "Version de Kubernetes"
   type        = string
-  default     = "1.29"
+  default     = "1.30"
 }
 
 variable "ghcr_username" {
