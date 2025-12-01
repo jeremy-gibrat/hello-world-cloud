@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hello-world
+description: A Helm chart for Hello World application with Java backend and Angular frontend
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

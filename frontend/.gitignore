@@ -1,0 +1,51 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Angular
+/dist/
+/tmp/
+/out-tsc/
+/bazel-out/
+
+# Angular cache
+.angular/
+.sass-cache/
+
+# IDEs
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+/coverage/
+*.lcov
+
+# e2e
+/e2e/*.js
+/e2e/*.map
+
+# Build
+*.js.map
