@@ -1,0 +1,19 @@
+# Exemple de fichier terraform.tfvars
+# Copiez ce fichier vers terraform.tfvars et remplissez vos valeurs
+
+# Configuration de base
+resource_group_name = "rg-hello-world"
+location            = "francecentral"  # ou "westeurope", "northeurope"
+cluster_name        = "aks-hello-world"
+
+# Configuration des nodes (ajustez selon votre budget)
+node_count   = 1              # 1 node pour les tests
+node_vm_size = "Standard_B2s" # B1s (~10€/mois) ou B2s (~30€/mois)
+
+# Version Kubernetes
+kubernetes_version = "1.29"
+
+# GitHub Container Registry credentials
+# Créez un Personal Access Token (PAT) sur GitHub avec le scope 'read:packages'
+ghcr_username = "votre-username-github"
+ghcr_token    = "ghp_votre_token_github"

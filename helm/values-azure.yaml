@@ -1,0 +1,54 @@
+# Values pour le déploiement sur Azure AKS avec GitHub Container Registry
+
+backend:
+  replicaCount: 1
+  image:
+    # Remplacez 'YOUR-GITHUB-USERNAME' par votre nom d'utilisateur GitHub
+    # Ex: ghcr.io/jeremygibrat/hello-backend
+    repository: ghcr.io/YOUR-GITHUB-USERNAME/hello-backend
+    tag: latest
+    pullPolicy: Always
+  
+  # Pull secret pour GHCR (créé par Terraform)
+  imagePullSecrets:
+    - name: ghcr-secret
+  
+  service:
+    type: ClusterIP
+    port: 8080
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+frontend:
+  replicaCount: 1
+  image:
+    # Remplacez 'YOUR-GITHUB-USERNAME' par votre nom d'utilisateur GitHub
+    # Ex: ghcr.io/jeremygibrat/hello-frontend
+    repository: ghcr.io/YOUR-GITHUB-USERNAME/hello-frontend
+    tag: latest
+    pullPolicy: Always
+    pullPolicy: Always
+  
+  # Pull secret pour GHCR (créé par Terraform)
+  imagePullSecrets:
+    - name: ghcr-secret
+  
+  service:
+    # LoadBalancer pour exposer l'app sur Azure (coût minime)
+    type: LoadBalancer
+    port: 80
+    # Optionnel: IP publique statique
+    # loadBalancerIP: "x.x.x.x"
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
