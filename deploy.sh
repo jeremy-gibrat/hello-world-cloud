@@ -6,6 +6,24 @@ set -e
 
 RELEASE_NAME="hello-world"
 
+# Vérifier qu'on est sur Minikube
+CURRENT_CONTEXT=$(kubectl config current-context)
+if [ "$CURRENT_CONTEXT" != "minikube" ]; then
+    echo "⚠️  Attention: Vous n'êtes pas sur Minikube!"
+    echo "   Contexte actuel: $CURRENT_CONTEXT"
+    echo ""
+    read -p "Voulez-vous basculer vers Minikube ? (yes/no):" switch_context
+    if [ "$switch_context" = "yes" ]; then
+        kubectl config use-context minikube
+        echo "✅ Basculé vers Minikube"
+    else
+        echo "❌ Déploiement annulé"
+        exit 1
+    fi
+fi
+echo "📍 Déploiement sur: Minikube"
+echo ""
+
 echo "🚀 Déploiement de l'application avec Helm..."
 
 # Vérifier si le release existe déjà

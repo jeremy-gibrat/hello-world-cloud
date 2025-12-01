@@ -95,6 +95,16 @@ echo ""
 echo "✅ Configuration kubectl mise à jour"
 cd ..
 
+# Vérifier qu'on est sur le bon contexte
+CURRENT_CONTEXT=$(kubectl config current-context)
+if [[ "$CURRENT_CONTEXT" != *"$CLUSTER_NAME"* ]]; then
+    echo "⚠️  Attention: contexte kubectl actuel: $CURRENT_CONTEXT"
+    echo "   Passage au contexte AKS..."
+    kubectl config use-context "$CLUSTER_NAME"
+fi
+
+echo "📍 Contexte kubectl: $(kubectl config current-context)"
+
 # Vérifier que le cluster est accessible
 echo ""
 echo "🔍 Vérification du cluster..."

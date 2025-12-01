@@ -18,6 +18,16 @@ if ! kubectl cluster-info &> /dev/null; then
     exit 1
 fi
 
+# Afficher le contexte actuel
+CURRENT_CONTEXT=$(kubectl config current-context)
+echo "📍 Contexte actuel: $CURRENT_CONTEXT"
+if [[ "$CURRENT_CONTEXT" == "minikube" ]]; then
+    echo "⚠️  Vous êtes sur Minikube, pas sur Azure AKS!"
+    echo "   Basculez vers AKS avec: kubectl config use-context aks-hello-world"
+    exit 1
+fi
+echo ""
+
 echo "🎯 Cluster Kubernetes:"
 kubectl cluster-info | head -n 1
 
