@@ -24,10 +24,10 @@ fi
 
 log_info "Namespace: $NAMESPACE"
 log_info "Tunnels créés:"
-log_info "  Frontend:  http://localhost:8080"
-log_info "  Backend:   http://localhost:8081"
-log_info "  RabbitMQ:  http://localhost:15672 (guest/guest)"
-log_info "  Kibana:    http://localhost:5601"
+log_info "  Frontend:      http://localhost:8080"
+log_info "  Backend:       http://localhost:8081"
+log_info "  RabbitMQ:      http://localhost:15672 (admin/adminpass123)"
+log_info "  Elasticsearch: http://localhost:9200"
 log_info ""
 log_warning "Appuyez sur Ctrl+C pour arrêter les tunnels"
 
@@ -37,7 +37,7 @@ separator
 kubectl port-forward -n $NAMESPACE service/hello-world-frontend-service 8080:80 &
 kubectl port-forward -n $NAMESPACE service/hello-world-backend-service 8081:8080 &
 kubectl port-forward -n $NAMESPACE service/rabbitmq-service 15672:15672 &
-kubectl port-forward -n $NAMESPACE service/kibana-service 5601:5601 &
+kubectl port-forward -n $NAMESPACE service/elasticsearch-service 9200:9200 &
 
 # Attendre l'interruption
 wait

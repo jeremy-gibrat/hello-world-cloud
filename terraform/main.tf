@@ -14,7 +14,11 @@ terraform {
 }
 
 provider "azurerm" {
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
 
 # Resource Group
@@ -44,7 +48,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     name                        = "default"
     node_count                  = var.node_count
     vm_size                     = var.node_vm_size
-    os_disk_size_gb             = 128
+    os_disk_size_gb             = 64
     type                        = "VirtualMachineScaleSets"
     enable_auto_scaling         = false
     temporary_name_for_rotation = "temp"

@@ -19,8 +19,18 @@ separator
 # Charger la configuration
 load_env || exit 1
 
+# Détecter le namespace selon le contexte
+CONTEXT=$(kubectl config current-context)
+if [[ "$CONTEXT" == *"minikube"* ]]; then
+    NAMESPACE="hello-world-dev"
+else
+    NAMESPACE="hello-world-prod"
+fi
+
+log_info "Namespace détecté: $NAMESPACE"
+
 # Créer les secrets
-create_k8s_secrets || exit 1
+create_k8s_secrets "$NAMESPACE" || exit 1
 
 separator
 log_success "Secrets créés avec succès!"

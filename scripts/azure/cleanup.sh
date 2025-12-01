@@ -26,7 +26,7 @@ load_env || exit 1
 
 # Nettoyer les ressources Kubernetes
 log_step "Suppression des ressources Kubernetes..."
-helm_cleanup "$RELEASE_NAME"
+helm_cleanup "$RELEASE_NAME" "hello-world-prod"
 
 # Option pour détruire l'infrastructure Terraform
 if confirm "Voulez-vous également détruire l'infrastructure Azure (cluster AKS) ?" "no"; then

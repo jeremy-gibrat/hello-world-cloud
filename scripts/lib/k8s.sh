@@ -192,51 +192,82 @@ show_cluster_status() {
     log_info "État du cluster Kubernetes"
     separator
     
-    echo "📍 Contexte: $(get_k8s_context)"
+    local context=$(get_k8s_context)
+    local namespace="default"
+    
+    # Détecter le namespace selon le contexte
+    if [[ "$context" == *"minikube"* ]]; then
+        namespace="hello-world-dev"
+    elif [[ "$context" == *"aks"* ]] || [[ "$context" != "minikube" ]]; then
+        namespace="hello-world-prod"
+    fi
+    
+    echo "📍 Contexte: $context"
+    echo "📦 Namespace: $namespace"
     echo ""
     
     echo "🎯 Pods:"
-    kubectl get pods
+    kubectl get pods -n $namespace
     echo ""
     
     echo "🌐 Services:"
-    kubectl get services
+    kubectl get services -n $namespace
     echo ""
     
     echo "📦 Déploiements:"
-    kubectl get deployments
+    kubectl get deployments -n $namespace
     echo ""
 }
 
 # Nettoyer les ressources Helm
 helm_cleanup() {
     local release_name="$1"
+    local namespace="${2:-}"
     
     log_step "Nettoyage du release Helm '$release_name'..."
     
-    if helm list | grep -q "$release_name"; then
-        helm uninstall "$release_name"
+    local namespace_flag=""
+    if [ -n "$namespace" ]; then
+        namespace_flag="-n $namespace"
+    fi
+    
+    if helm list $namespace_flag | grep -q "$release_name"; then
+        helm uninstall "$release_name" $namespace_flag
         log_success "Release '$release_name' supprimé"
     else
         log_info "Release '$release_name' non trouvé"
     fi
     
     # Supprimer les secrets
-    if kubectl get secret app-secrets &>/dev/null; then
-        kubectl delete secret app-secrets
+    if kubectl get secret app-secrets $namespace_flag &>/dev/null; then
+        kubectl delete secret app-secrets $namespace_flag
         log_success "Secret 'app-secrets' supprimé"
     fi
 }
 
 # Redémarrer les déploiements
 restart_deployments() {
-    local deployments=("$@")
+    local namespace=""
+    local deployments=()
+    
+    # Si le premier argument contient un slash, c'est un namespace
+    if [[ "$1" == *"/"* ]]; then
+        namespace="${1%%/*}"
+        shift
+    fi
+    
+    deployments=("$@")
     
     log_step "Redémarrage des déploiements..."
     
+    local namespace_flag=""
+    if [ -n "$namespace" ]; then
+        namespace_flag="-n $namespace"
+    fi
+    
     for deployment in "${deployments[@]}"; do
-        if kubectl get deployment "$deployment" &>/dev/null; then
-            kubectl rollout restart deployment/"$deployment"
+        if kubectl get deployment "$deployment" $namespace_flag &>/dev/null; then
+            kubectl rollout restart deployment/"$deployment" $namespace_flag
             log_info "Déploiement '$deployment' redémarré"
         else
             log_warning "Déploiement '$deployment' non trouvé"
@@ -245,8 +276,8 @@ restart_deployments() {
     
     # Attendre que les redémarrages soient terminés
     for deployment in "${deployments[@]}"; do
-        if kubectl get deployment "$deployment" &>/dev/null; then
-            wait_for_deployment "$deployment" 120
+        if kubectl get deployment "$deployment" $namespace_flag &>/dev/null; then
+            wait_for_deployment "$deployment" 120 $namespace
         fi
     done
 }

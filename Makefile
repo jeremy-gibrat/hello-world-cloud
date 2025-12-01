@@ -70,6 +70,11 @@ secrets: ## Créer/mettre à jour les secrets Kubernetes
 tunnel: ## Créer des tunnels vers les services (Azure)
 	@./scripts/utils/tunnel.sh
 
+portainer: ## Ouvrir Portainer (interface web de gestion K8s)
+	@echo "$(GREEN)🐳 Ouverture de Portainer...$(RESET)"
+	@echo "$(CYAN)Accédez à: http://localhost:9000$(RESET)"
+	@kubectl port-forward -n portainer svc/portainer 9000:9000
+
 logs-backend: ## Afficher les logs du backend
 	@kubectl logs -f -l app=hello-world-backend
 

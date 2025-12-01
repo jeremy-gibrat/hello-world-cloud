@@ -25,7 +25,7 @@ check_prerequisites kubectl helm || exit 1
 ensure_minikube_context || exit 1
 
 # Nettoyer les ressources Helm
-helm_cleanup "$RELEASE_NAME"
+helm_cleanup "$RELEASE_NAME" "hello-world-dev"
 
 separator
 log_success "Nettoyage terminé!"

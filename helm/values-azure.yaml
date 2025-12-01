@@ -5,13 +5,13 @@ namespace:
   enabled: true
   name: hello-world-prod
 
-# Services optionnels (désactivés par défaut pour économiser des ressources)
+# Services optionnels (optimisés pour la consommation)
 elasticsearch:
   enabled: true
   resources:
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 200m
+      memory: 512Mi
     requests:
       cpu: 50m
       memory: 256Mi
@@ -46,8 +46,8 @@ postgres:
   password: hellopass123
   resources:
     limits:
-      cpu: 300m
-      memory: 384Mi
+      cpu: 200m
+      memory: 256Mi
     requests:
       cpu: 50m
       memory: 128Mi
@@ -72,8 +72,8 @@ backend:
   
   resources:
     limits:
-      cpu: 300m
-      memory: 384Mi
+      cpu: 200m
+      memory: 256Mi
     requests:
       cpu: 50m
       memory: 128Mi
@@ -93,15 +93,15 @@ frontend:
     - name: ghcr-secret
   
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
   
   resources:
     limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 50m
+      cpu: 100m
       memory: 128Mi
+    requests:
+      cpu: 25m
+      memory: 64Mi
 
 
