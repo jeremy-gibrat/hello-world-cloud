@@ -6,6 +6,16 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
+# Générer un UUID court (8 caractères)
+generate_short_uuid() {
+    # Utilise uuidgen si disponible, sinon génère depuis /dev/urandom
+    if command -v uuidgen &>/dev/null; then
+        echo "$(uuidgen | tr '[:upper:]' '[:lower:]' | cut -c1-8)"
+    else
+        echo "$(cat /dev/urandom | LC_ALL=C tr -dc 'a-f0-9' | head -c 8)"
+    fi
+}
+
 # Configuration du builder buildx
 setup_buildx() {
     local builder_name="${1:-multiplatform}"
@@ -174,8 +184,8 @@ build_local_images() {
     local backend_image="${3:-hello-backend}"
     local frontend_image="${4:-hello-frontend}"
     
-    # Tag avec timestamp pour forcer le rechargement
-    local tag="$(date +%Y%m%d-%H%M%S)"
+    # Tag avec UUID court pour forcer le rechargement
+    local tag="$(generate_short_uuid)"
     
     separator
     log_step "Build des images Docker locales"
@@ -228,7 +238,7 @@ build_azure_images() {
 }
 
 # Exporter les fonctions
-export -f setup_buildx build_image build_and_push_multiplatform
+export -f generate_short_uuid setup_buildx build_image build_and_push_multiplatform
 export -f load_image_to_minikube docker_login ghcr_login
 export -f list_images cleanup_images image_exists
 export -f build_local_images build_azure_images
