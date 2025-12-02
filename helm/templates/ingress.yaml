@@ -1,0 +1,88 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  labels:
+    app: {{ .Release.Name }}
+  annotations:
+    {{- if .Values.ingress.className }}
+    {{- if eq .Values.ingress.className "nginx" }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.tls.enabled }}"
+    {{- end }}
+    {{- end }}
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    {{- range .Values.ingress.hosts }}
+    - {{ .host }}
+    {{- end }}
+    {{- if .Values.ingress.tls.secretName }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+  # Règle sans host pour accepter toutes les requêtes (accès direct par IP)
+  - http:
+      paths:
+      # Frontend (Angular)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-frontend-service
+            port:
+              number: 80
+      # Backend API
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-backend-service
+            port:
+              number: 8080
+      # Actuator (health checks)
+      - path: /actuator
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-backend-service
+            port:
+              number: 8080
+  {{- range .Values.ingress.hosts }}
+  - host: {{ .host }}
+    http:
+      paths:
+      # Frontend (Angular)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-frontend-service
+            port:
+              number: 80
+      # Backend API
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-backend-service
+            port:
+              number: 8080
+      # Actuator (health checks)
+      - path: /actuator
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Release.Name }}-backend-service
+            port:
+              number: 8080
+  {{- end }}
+{{- end }}

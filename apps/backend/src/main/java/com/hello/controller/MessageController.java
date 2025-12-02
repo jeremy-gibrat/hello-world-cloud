@@ -2,6 +2,8 @@ package com.hello.controller;
 
 import com.hello.service.MessageConsumer;
 import com.hello.service.MessageProducer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/messages")
 @CrossOrigin(origins = "*")
+@ConditionalOnProperty(name = "spring.rabbitmq.enabled", havingValue = "true", matchIfMissing = false)
 public class MessageController {
 
     private final MessageProducer messageProducer;

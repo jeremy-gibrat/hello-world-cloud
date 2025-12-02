@@ -98,14 +98,14 @@ if ! grep -q "your-github-username" "$PROJECT_ROOT/helm/values-azure.yaml" 2>/de
     fi
 fi
 
-helm_deploy "$RELEASE_NAME" "$PROJECT_ROOT/helm" "$PROJECT_ROOT/helm/values-azure.yaml" "$NAMESPACE"
+helm_deploy "$RELEASE_NAME" "$PROJECT_ROOT/helm" "-f $PROJECT_ROOT/helm/values-azure.yaml" "$NAMESPACE"
 
 # Créer les secrets Kubernetes après que le namespace existe
 create_k8s_secrets "$NAMESPACE" || exit 1
 
 # Attendre que les pods soient prêts
-wait_for_pods "app=hello-world-backend" 600 "$NAMESPACE" || true
-wait_for_pods "app=hello-world-frontend" 300 "$NAMESPACE" || true
+wait_for_pods "app=hello-world-backend" 10 "$NAMESPACE" || true
+wait_for_pods "app=hello-world-frontend" 10 "$NAMESPACE" || true
 
 separator
 log_success "Application déployée avec succès sur Azure AKS!"

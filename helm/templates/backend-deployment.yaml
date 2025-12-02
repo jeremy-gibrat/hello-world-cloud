@@ -44,32 +44,36 @@ spec:
             secretKeyRef:
               name: app-secrets
               key: postgres-password
-        - name: SPRING_RABBITMQ_USERNAME
+        - name: RABBITMQ_USER
           valueFrom:
             secretKeyRef:
               name: app-secrets
               key: rabbitmq-user
-        - name: SPRING_RABBITMQ_PASSWORD
+        - name: RABBITMQ_PASSWORD
           valueFrom:
             secretKeyRef:
               name: app-secrets
               key: rabbitmq-password
         resources:
           {{- toYaml .Values.backend.resources | nindent 10 }}
+        {{- if .Values.backend.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /api/hello
+            path: /actuator/health
             port: 8080
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 5
+        {{- end }}
+        {{- if .Values.backend.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: /api/hello
+            path: /actuator/health
             port: 8080
-          initialDelaySeconds: 45
+          initialDelaySeconds: 90
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 6
+          failureThreshold: 5
+        {{- end }}
 {{- end }}

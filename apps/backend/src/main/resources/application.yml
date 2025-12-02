@@ -1,18 +1,44 @@
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    rabbit:
+      enabled: false
+    elasticsearch:
+      enabled: false
+
 spring:
   application:
     name: hello-backend
   rabbitmq:
+    enabled: true
     host: rabbitmq-service
     port: 5672
-    username: guest
-    password: guest
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:admin123}
+    connection-timeout: 5000
+    listener:
+      simple:
+        auto-startup: true
   datasource:
     url: jdbc:postgresql://postgres-service:5432/hellodb
     username: hellouser
-    password: hellopass123
+    password: ${POSTGRES_PASSWORD:hellopass123}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

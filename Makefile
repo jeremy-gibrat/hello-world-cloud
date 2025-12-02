@@ -59,6 +59,9 @@ clean-azure: ## Nettoyer l'environnement Azure
 
 full-azure: build-azure deploy-azure ## Build + Deploy sur Azure
 
+setup-ingress: ## Configurer l'Ingress sur Azure (exposition publique)
+	@./scripts/azure/setup-ingress.sh
+
 ##@ Utilitaires
 
 status: ## Afficher l'état du cluster Kubernetes

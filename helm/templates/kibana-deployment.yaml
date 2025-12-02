@@ -30,9 +30,25 @@ spec:
           value: "0.0.0.0"
         resources:
           limits:
-            memory: "1Gi"
-            cpu: "500m"
-          requests:
             memory: "512Mi"
-            cpu: "150m"
+            cpu: "300m"
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
 {{- end }}

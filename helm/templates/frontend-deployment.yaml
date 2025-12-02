@@ -28,16 +28,20 @@ spec:
           name: http
         resources:
           {{- toYaml .Values.frontend.resources | nindent 10 }}
+        {{- if .Values.frontend.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 30
           periodSeconds: 10
+        {{- end }}
+        {{- if .Values.frontend.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 5
+        {{- end }}
 {{- end }}

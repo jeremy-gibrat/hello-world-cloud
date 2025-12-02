@@ -137,7 +137,7 @@ create_k8s_secrets() {
         namespace_flag="-n $namespace"
     fi
     
-    # Créer le secret
+    # Créer le secret app-secrets
     kubectl create secret generic app-secrets \
         --from-literal=postgres-db="$POSTGRES_DB" \
         --from-literal=postgres-user="$POSTGRES_USER" \
@@ -149,26 +149,48 @@ create_k8s_secrets() {
     
     if [ $? -eq 0 ]; then
         log_success "Secret 'app-secrets' créé/mis à jour"
-        return 0
     else
-        log_error "Échec de la création du secret"
+        log_error "Échec de la création du secret app-secrets"
         return 1
     fi
+    
+    # Créer le secret GHCR pour Azure (si GITHUB_TOKEN est défini)
+    if [ -n "${GITHUB_TOKEN:-}" ] && [ -n "${GITHUB_USERNAME:-}" ]; then
+        log_step "Création du secret GHCR pour pull d'images..."
+        
+        kubectl create secret docker-registry ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username="$GITHUB_USERNAME" \
+            --docker-password="$GITHUB_TOKEN" \
+            --docker-email="${GITHUB_EMAIL:-noreply@github.com}" \
+            $namespace_flag \
+            --dry-run=client -o yaml | kubectl apply $namespace_flag -f -
+        
+        if [ $? -eq 0 ]; then
+            log_success "Secret 'ghcr-secret' créé/mis à jour"
+        else
+            log_warning "Échec de la création du secret ghcr-secret (optionnel pour Minikube)"
+        fi
+    else
+        log_debug "GITHUB_TOKEN non défini, skip ghcr-secret"
+    fi
+    
+    return 0
 }
 
 # Déployer avec Helm
 helm_deploy() {
     local release_name="$1"
     local chart_path="$2"
-    local values_file="${3:-}"
+    local extra_args="${3:-}"
     local namespace="${4:-}"
     
     log_step "Déploiement avec Helm..."
     
     local helm_cmd="helm upgrade --install $release_name $chart_path"
     
-    if [ -n "$values_file" ]; then
-        helm_cmd="$helm_cmd -f $values_file"
+    if [ -n "$extra_args" ]; then
+        helm_cmd="$helm_cmd $extra_args"
     fi
     
     if [ -n "$namespace" ]; then

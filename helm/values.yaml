@@ -10,10 +10,12 @@ namespace:
 # Services optionnels (activés par défaut pour Minikube)
 elasticsearch:
   enabled: true
+  storage: "5Gi"
+  storageClass: "standard" # Décommentez pour spécifier une StorageClass
   resources:
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 400m
+      memory: 768Mi
     requests:
       cpu: 100m
       memory: 512Mi
@@ -37,6 +39,8 @@ kibana:
 
 postgres:
   enabled: true
+  storage: "5Gi"
+  # storageClass: "standard" # Décommentez pour spécifier une StorageClass
   resources:
     limits:
       cpu: 500m
@@ -58,18 +62,22 @@ backend:
   replicaCount: 1
   image:
     repository: hello-backend
-    tag: latest
+    tag: v2.0
     pullPolicy: IfNotPresent
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
   service:
     type: ClusterIP
     port: 8080
   resources:
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 768Mi
     requests:
       cpu: 250m
-      memory: 256Mi
+      memory: 512Mi
 
 frontend:
   enabled: true
@@ -77,7 +85,11 @@ frontend:
   image:
     repository: hello-frontend
     tag: latest
-    pullPolicy: Never
+    pullPolicy: IfNotPresent
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
   service:
     type: NodePort
     port: 80
@@ -89,5 +101,18 @@ frontend:
     requests:
       cpu: 100m
       memory: 128Mi
+
+# Ingress configuration (optionnel - désactivé par défaut pour Minikube)
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: hello-world.local
+  tls:
+    enabled: false
+    secretName: ""
+    # secretName: hello-world-tls
 
 

@@ -26,13 +26,31 @@ spec:
         env:
         - name: ELASTICSEARCH_HOSTS
           value: "http://elasticsearch-service:9200"
+        - name: LS_JAVA_OPTS
+          value: "-Xms256m -Xmx256m"
         resources:
           limits:
-            memory: "512Mi"
-            cpu: "300m"
+            memory: "384Mi"
+            cpu: "250m"
           requests:
             memory: "256Mi"
-            cpu: "150m"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 90
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         volumeMounts:
         - name: logstash-config
           mountPath: /usr/share/logstash/pipeline

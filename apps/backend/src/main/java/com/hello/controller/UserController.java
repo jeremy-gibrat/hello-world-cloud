@@ -1,5 +1,7 @@
 package com.hello.controller;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
 import com.hello.model.User;
 import com.hello.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired(required = false)
+    private ElasticsearchClient elasticsearchClient;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -49,10 +54,36 @@ public class UserController {
                         .body(Map.of("error", "Email already exists"));
             }
             User savedUser = userRepository.save(user);
+            
+            // Index dans Elasticsearch
+            indexUserInElasticsearch(savedUser);
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    private void indexUserInElasticsearch(User user) {
+        if (elasticsearchClient != null) {
+            try {
+                Map<String, Object> doc = new HashMap<>();
+                doc.put("id", user.getId());
+                doc.put("name", user.getName());
+                doc.put("email", user.getEmail());
+                doc.put("@timestamp", java.time.LocalDateTime.now().toString());
+                
+                IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i
+                        .index("users")
+                        .id(String.valueOf(user.getId()))
+                        .document(doc)
+                );
+                
+                elasticsearchClient.index(request);
+            } catch (Exception e) {
+                System.err.println("Failed to index user in Elasticsearch: " + e.getMessage());
+            }
         }
     }
 
@@ -107,9 +138,14 @@ public class UserController {
     public ResponseEntity<?> initializeData() {
         try {
             if (userRepository.count() == 0) {
-                userRepository.save(new User("Alice Dupont", "alice@example.com"));
-                userRepository.save(new User("Bob Martin", "bob@example.com"));
-                userRepository.save(new User("Charlie Durand", "charlie@example.com"));
+                User user1 = userRepository.save(new User("Alice Dupont", "alice@example.com"));
+                User user2 = userRepository.save(new User("Bob Martin", "bob@example.com"));
+                User user3 = userRepository.save(new User("Charlie Durand", "charlie@example.com"));
+                
+                // Index les utilisateurs dans Elasticsearch
+                indexUserInElasticsearch(user1);
+                indexUserInElasticsearch(user2);
+                indexUserInElasticsearch(user3);
                 
                 Map<String, Object> response = new HashMap<>();
                 response.put("message", "Sample data initialized");

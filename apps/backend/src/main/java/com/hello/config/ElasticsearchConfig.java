@@ -8,6 +8,7 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 public class ElasticsearchConfig {
@@ -19,6 +20,7 @@ public class ElasticsearchConfig {
     private int elasticsearchPort;
 
     @Bean
+    @Lazy
     public ElasticsearchClient elasticsearchClient() {
         RestClient restClient = RestClient.builder(
                 new HttpHost(elasticsearchHost, elasticsearchPort, "http")

@@ -8,13 +8,15 @@ namespace:
 # Services optionnels (optimisés pour la consommation)
 elasticsearch:
   enabled: true
+  storage: "10Gi"
+  storageClass: "managed-csi" # Azure Managed Disk CSI
   resources:
     limits:
-      cpu: 200m
-      memory: 512Mi
+      cpu: 400m
+      memory: 768Mi
     requests:
-      cpu: 50m
-      memory: 256Mi
+      cpu: 100m
+      memory: 512Mi
 
 logstash:
   enabled: false
@@ -41,6 +43,8 @@ rabbitmq:
 
 postgres:
   enabled: true
+  storage: "10Gi"
+  storageClass: "managed-csi" # Azure Managed Disk CSI
   database: hellodb
   username: hellouser
   password: hellopass123
@@ -60,9 +64,15 @@ backend:
     # Ex: ghcr.io/YOUR-GITHUB-USERNAME/hello-backend
     repository: ghcr.io/jeremy-gibrat/hello-backend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   
-  # Pull secret pour GHCR (créé par Terraform)
+  # Health probes
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
+  
+  # Pull secret pour GHCR
   imagePullSecrets:
     - name: ghcr-secret
   
@@ -72,11 +82,11 @@ backend:
   
   resources:
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 500m
+      memory: 768Mi
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 100m
+      memory: 512Mi
 
 frontend:
   enabled: true
@@ -88,7 +98,13 @@ frontend:
     tag: latest
     pullPolicy: IfNotPresent
   
-  # Pull secret pour GHCR (créé par Terraform)
+  # Health probes
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
+  
+  # Pull secret pour GHCR
   imagePullSecrets:
     - name: ghcr-secret
   
@@ -103,5 +119,19 @@ frontend:
     requests:
       cpu: 25m
       memory: 64Mi
+
+# Ingress configuration for Azure
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    # Pour cert-manager avec Let's Encrypt (optionnel)
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: hello-kube
+  tls:
+    enabled: false  # Activez pour HTTPS
+    secretName: ""
+    # secretName: hello-world-tls
 
 

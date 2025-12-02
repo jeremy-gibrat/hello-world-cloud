@@ -58,6 +58,7 @@ make clean            # Nettoyer l'environnement
 | [`docs/SCRIPTS.md`](docs/SCRIPTS.md) | 📜 Documentation des scripts et Makefile |
 | [`docs/SECRETS.md`](docs/SECRETS.md) | 🔐 Gestion des secrets et mots de passe |
 | [`docs/AZURE.md`](docs/AZURE.md) | ☁️ Guide Azure AKS avec Terraform |
+| [`docs/INGRESS.md`](docs/INGRESS.md) | 🌐 Exposition publique avec Ingress |
 | [`docs/POSTGRESQL.md`](docs/POSTGRESQL.md) | 🐘 Documentation PostgreSQL et API |
 | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | 🛠️ Résolution des problèmes |
 | [`docs/PREVENTION.md`](docs/PREVENTION.md) | 🛡️ Prévention des problèmes de cache |
@@ -126,11 +127,20 @@ kubectl port-forward service/hello-world-frontend-service 8081:80
 # Créer des tunnels SSH (recommandé - gratuit)
 make tunnel
 
+# OU configurer un Ingress pour accès public
+make setup-ingress
+# Puis déployer
+make deploy-azure
+
 # Services accessibles :
+# Via tunnels:
 # → Frontend:  http://localhost:8080
 # → Backend:   http://localhost:8081
 # → RabbitMQ:  http://localhost:15672 (guest/guest)
 # → Kibana:    http://localhost:5601
+
+# Via Ingress (après configuration DNS):
+# → Frontend:  http://votre-domaine.com
 ```
 
 ## 🔍 Développement

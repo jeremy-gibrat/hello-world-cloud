@@ -174,20 +174,28 @@ build_local_images() {
     local backend_image="${3:-hello-backend}"
     local frontend_image="${4:-hello-frontend}"
     
+    # Tag avec timestamp pour forcer le rechargement
+    local tag="$(date +%Y%m%d-%H%M%S)"
+    
     separator
     log_step "Build des images Docker locales"
+    log_info "Tag: $tag"
     separator
     
     # Backend
-    build_image "$backend_dir" "$backend_image" "latest" "" "true"
-    load_image_to_minikube "$backend_image" "latest"
+    build_image "$backend_dir" "$backend_image" "$tag" "" "true"
+    load_image_to_minikube "$backend_image" "$tag"
     
     # Frontend
-    build_image "$frontend_dir" "$frontend_image" "latest" "" "true"
-    load_image_to_minikube "$frontend_image" "latest"
+    build_image "$frontend_dir" "$frontend_image" "$tag" "" "true"
+    load_image_to_minikube "$frontend_image" "$tag"
+    
+    # Sauvegarder le tag dans un fichier pour le déploiement
+    echo "$tag" > "$PROJECT_ROOT/.image-tag"
     
     separator
     log_success "Images locales buildées et chargées dans Minikube"
+    log_info "Tag des images: $tag"
     separator
 }
 
